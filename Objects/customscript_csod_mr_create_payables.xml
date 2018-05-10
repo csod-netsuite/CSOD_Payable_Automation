@@ -1,0 +1,28 @@
+<mapreducescript scriptid="customscript_csod_mr_create_payables">
+  <description></description>
+  <isinactive>F</isinactive>
+  <name>CSOD MR Create Payable Bills</name>
+  <notifyadmins>F</notifyadmins>
+  <notifyemails></notifyemails>
+  <notifyowner>T</notifyowner>
+  <scriptfile>[/SuiteScripts/CSOD_Payable_Automation/CSOD_MR_Create_Payables.js]</scriptfile>
+  <scriptdeployments>
+    <scriptdeployment scriptid="customdeploy_dply_adhoc_1">
+      <buffersize>32</buffersize>
+      <concurrencylimit>1</concurrencylimit>
+      <isdeployed>T</isdeployed>
+      <loglevel>DEBUG</loglevel>
+      <queueallstagesatonce>T</queueallstagesatonce>
+      <runasrole>ADMINISTRATOR</runasrole>
+      <status>NOTSCHEDULED</status>
+      <yieldaftermins>60</yieldaftermins>
+      <recurrence>
+        <single>
+          <repeat></repeat>
+          <startdate>2018-04-21</startdate>
+          <starttime>01:00:00Z</starttime>
+        </single>
+      </recurrence>
+    </scriptdeployment>
+  </scriptdeployments>
+</mapreducescript>
