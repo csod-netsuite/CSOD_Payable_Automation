@@ -1,5 +1,5 @@
-define(['N/search', 'N/record', 'N/runtime', '../Lib/moment'], 
-		function (search, record, runtime, moment) {
+define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'], 
+		function (search, record, runtime, moment, format) {
 
     /**
      * Creates Payable Bills off of Payable ID (Custom Record)
@@ -32,9 +32,10 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment'],
         this.department = null;
         this.salesorder = null;
         this.customer = null;
-        this.items = null;
+        this.items = [];
         this.salesOrderLineId = null;
         this.amount = 0;
+        this.trandate = null;
     };
 
 
@@ -56,22 +57,26 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment'],
     };
 
     function createPayableObj(payableIdObj) {
-
+    	
+    	var returnArr = [];
         var headerObj = new PayableObj();
 
         var startDate = payableIdObj.values.custrecord_pid_start_date;
         var endDate = payableIdObj.values.custrecord_pid_end_date;
-        var totalAmount = payableIdObj.values.custrecord_pid_payable_amount;
+        var totalAmount = +payableIdObj.values.custrecord_pid_payable_amount;
         var salesOrderId = payableIdObj.values.custrecord_pid_saleorder_link.value;
         var lineUniqueId = payableIdObj.values.custrecord_pid_salesorder_line_id;
         var salesOrderCurrency = payableIdObj.values.custrecord_pid_transaction_currency.value;
         var vendonId = payableIdObj.values.custrecord_pid_vendor_link.value;
+        
+        //TODO get quantity from payableObj
+        var quantity = 1;
 
         // lookup for Sales Order record
         var soLookups = search.lookupFields({
             type: search.Type.SALES_ORDER,
             id: salesOrderId,
-            columns: ['location', 'department', 'subsidiary']
+            columns: ['location', 'department', 'subsidiary', 'entity']
         });
 
         // lookup for Vendor Record to get related currency data
@@ -91,8 +96,8 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment'],
         var contractLengthYears = (+contractLengthDays%365) > 362 ? Math.round(+contractLengthDays/365) : Math.ceil(+contractLengthDays/365);
         headerObj.isMultiyearLine =  contractLengthYears > 1;
         headerObj.numberOfYears = contractLengthYears;
-        headerObj.startdate = startDate;
-        headerObj.enddate = endDate;
+        headerObj.startdate = momentStartDate._d;
+        headerObj.enddate = momentEndDate._d;
         headerObj.vendor = vendonId;
         headerObj.salesOrderLineId = lineUniqueId;
         headerObj.salesorder = salesOrderId
@@ -114,22 +119,51 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment'],
         if(soLookups.subsidiary[0]) {
             headerObj.subsidiary = soLookups.subsidiary[0].value;
         }
+        
+        if(soLookups.entity[0]) {
+        	headerObj.customer = soLookups.entity[0].value;
+        }
 
         log.debug({
             title: "Some Values Check",
             details: 'startDate = ' + startDate + ", endDate = " + endDate + ", Currency ID = " + salesOrderCurrency
         });
+        
+        // append object to returnArr
+        for(var i = 1; i <= contractLengthYears; i++) {
+        	if(headerObj.trandate === null) {
+        		headerObj.trandate = momentStartDate._d
+        	} else {
+        		headerObj.trandate = moment(headerObj.trandate).add(12, 'months')._d
+        	}
+        	
+        	headerObj.items = [createPayableObjItem(totalAmount, contractLengthYears, quantity, momentStartDate._d, momentEndDate._d)];
+        	
+        	returnArr.push(headerObj);
+        	
+        	log.debug({
+        		title: 'headerObj value check',
+        		details: headerObj
+        	});
+        }
 
-        log.debug({
-            title: 'headerObj value check',
-            details: headerObj
-        });
-
-        return headerObj;
+        return returnArr;
     }
 
-    function createPayableObjItem(payableIdObj) {
-
+    function createPayableObjItem(totalAmount, numOfYears, qty, startDate, endDate) {
+    	var lineObj = new PayableItemsObj();
+    	
+    	if(numOfYears > 1) {
+    		lineObj.amount = totalAmount / numOfYears;
+    	} else {
+    		lineObj.amount = totalAmount;
+    	}
+    	
+    	lineObj.rate = lineObj.amount / qty;
+    	lineObj.startdate = startDate;
+    	lineObj.enddate = endDate;
+    	
+    	return lineObj
     }
 
     exports.config = {
@@ -161,9 +195,9 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment'],
 
     var map = function(context) {
         // build payable object and write to context
-        var payableObj = createPayableObj(JSON.parse(context.value));
-        var payableObjItem = createPayableObjItem(JSON.parse(context.value), year);
-
+        var payableObjArr = createPayableObj(JSON.parse(context.value));
+        
+        log.debug('Length of payableObjArr' + payableObjArr.length);
 
     };
 
