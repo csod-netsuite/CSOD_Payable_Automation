@@ -36,6 +36,7 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
         this.salesOrderLineId = null;
         this.amount = 0;
         this.trandate = null;
+        this.payableId = null;
     };
 
 
@@ -57,6 +58,11 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
     };
 
     function createPayableObj(payableIdObj) {
+
+        log.debug({
+            title: 'payableIdObj Check',
+            details: payableIdObj
+        });
     	
     	var returnArr = [];
         var headerObj = new PayableObj();
@@ -71,6 +77,8 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
         
         //TODO get quantity from payableObj
         var quantity = 1;
+
+        // TODO handle if the item is content anytime (payout tables)
 
         // lookup for Sales Order record
         var soLookups = search.lookupFields({
@@ -100,7 +108,9 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
         headerObj.enddate = momentEndDate._d;
         headerObj.vendor = vendonId;
         headerObj.salesOrderLineId = lineUniqueId;
-        headerObj.salesorder = salesOrderId
+        headerObj.salesorder = salesOrderId;
+        headerObj.payableId = payableIdObj.id;
+
         if(vendorLookups.currency[0]) {
             headerObj.vendorCurrency = vendorLookups.currency[0].value;
         }
@@ -162,6 +172,7 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
     	lineObj.rate = lineObj.amount / qty;
     	lineObj.startdate = startDate;
     	lineObj.enddate = endDate;
+    	lineObj.quantity = qty;
     	
     	return lineObj
     }
@@ -195,9 +206,15 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
 
     var map = function(context) {
         // build payable object and write to context
+        log.debug({
+            title: 'Context check',
+            details: context
+        });
         var payableObjArr = createPayableObj(JSON.parse(context.value));
         
         log.debug('Length of payableObjArr' + payableObjArr.length);
+
+        // TODO create vendor bill records
 
     };
 

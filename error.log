@@ -32,3 +32,15 @@ java.lang.Exception: url must be specified.
 2018-04-20 12:57:33,519 - 
 2018-04-20 12:57:33,519 - File: ~/FileCabinet/SuiteScripts/CSOD_Payable_Automation/CSOD_MR_Create_Payables.js
 2018-04-20 12:57:33,519 - 2018-04-20 12:57:33 (PST) Installation FAILED (0 minutes 1 second)
+2018-05-11 10:07:28,151 - An option is expected here instead of "/Users/Chan/Documents/workspace/CSOD_Payable_Automation/".
+com.netsuite.ide.exception.CliException: An option is expected here instead of "/Users/Chan/Documents/workspace/CSOD_Payable_Automation/".
+	at com.netsuite.ide.core.cli.CliParser.parseArguments(CliParser.java:377)
+	at com.netsuite.ide.core.cli.CliParser.getObjectInstance(CliParser.java:254)
+	at com.netsuite.tools.SDF.execute(SDF.java:254)
+	at com.netsuite.tools.SDF.main(SDF.java:86)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.codehaus.mojo.exec.ExecJavaMojo$1.run(ExecJavaMojo.java:294)
+	at java.lang.Thread.run(Thread.java:745)
