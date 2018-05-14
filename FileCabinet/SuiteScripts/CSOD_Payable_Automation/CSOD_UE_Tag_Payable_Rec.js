@@ -128,6 +128,12 @@ function(record) {
             title: 'orderLineObj value check',
             details: JSON.stringify(orderLineObj)
         });
+        
+        orderLineObj.custrecord_pid_item_quantity = newRec.getValue({
+        	sublistId: 'item',
+            fieldId: 'quantity',
+            line: lineNum
+        })
 
         return orderLineObj;
 

@@ -56,14 +56,20 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
         this.preferredvendor = null;
         this.contentprovfee = null;
     };
+    
 
-    function createPayableObj(payableIdObj) {
+    function createPayableObj(payableIdObj, multiVendor, multiVenPayoutObj) {
 
         log.debug({
             title: 'payableIdObj Check',
             details: payableIdObj
         });
     	
+        // TODO handle multiVenPayoutObj
+        /**
+         {payout_vendor: "30284", payout_percent: "30.0%"}
+         */
+        
     	var returnArr = [];
         var headerObj = new PayableObj();
 
@@ -74,11 +80,9 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
         var lineUniqueId = payableIdObj.values.custrecord_pid_salesorder_line_id;
         var salesOrderCurrency = payableIdObj.values.custrecord_pid_transaction_currency.value;
         var vendonId = payableIdObj.values.custrecord_pid_vendor_link.value;
+        var itemQuantity = payableIdObj.values.custrecord_pid_item_quantity;
+        var itemId = payableIdObj.values.custrecord_pid_item;
         
-        //TODO get quantity from payableObj
-        var quantity = 1;
-
-        // TODO handle if the item is content anytime (payout tables)
 
         // lookup for Sales Order record
         var soLookups = search.lookupFields({
@@ -147,7 +151,7 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
         		headerObj.trandate = moment(headerObj.trandate).add(12, 'months')._d
         	}
         	
-        	headerObj.items = [createPayableObjItem(totalAmount, contractLengthYears, quantity, momentStartDate._d, momentEndDate._d)];
+        	headerObj.items = [createPayableObjItem(totalAmount, contractLengthYears, itemQuantity, momentStartDate._d, momentEndDate._d)];
         	
         	returnArr.push(headerObj);
         	
@@ -159,6 +163,8 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
 
         return returnArr;
     }
+    
+    
 
     function createPayableObjItem(totalAmount, numOfYears, qty, startDate, endDate) {
     	var lineObj = new PayableItemsObj();
@@ -175,6 +181,79 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
     	lineObj.quantity = qty;
     	
     	return lineObj
+    }
+    
+    function getMultiVendorItems() {
+    	// TODO - complete this function - Created an array of multi vendor items and return it
+    	
+    	return ['2421','2429'];
+    }
+    
+    function getMultiVendorPayoutObjs(itemId) {
+    	
+    	log.audit("getMultiVendorPayoutObj " + itemId );
+    	
+    	var customrecord_multi_ven_pay_tableSearchObj = search.create({
+    		   type: "customrecord_multi_ven_pay_table",
+    		   filters:
+    		   [
+    		      ["isinactive","is","F"], 
+    		      "AND", 
+    		      ["custrecord_item_parent.internalidnumber","equalto",itemId]
+    		   ],
+    		   columns:
+    		   [
+    		      "custrecord_ven_1_payout",
+    		      "custrecord_vendor_1_pay_percent",
+    		      "custrecord_ven_2_payout",
+    		      "custrecord_vendor_2_pay_percent",
+    		      "custrecord_ven_3_payout",
+    		      "custrecord_vendor_3_pay_percent",
+    		      "custrecord_ven_4_payout",
+    		      "custrecord_vendor_4_pay_percent",
+    		      "custrecord_ven_5_payout",
+    		      "custrecord_vendor_5_pay_percent"
+    		   ]
+    		});
+    		var searchResultCount = customrecord_multi_ven_pay_tableSearchObj.runPaged().count;
+    		log.debug("customrecord_multi_ven_pay_tableSearchObj result count",searchResultCount);
+    		
+    		var vendorPayoutObj = {};
+    		var index = 1;
+    		
+    		if(searchResultCount === 1) {
+    			
+    			customrecord_multi_ven_pay_tableSearchObj.run().each(function(result) {
+    				
+    				for(var i = 0; i < result.columns.length; i++) {
+    					
+    					
+    					var col = result.columns[i];
+    					
+    					if(col.name.indexOf('percent') > -1) {
+    						
+    						vendorPayoutObj['index_' + index]['payout_percent'] = result.getValue(col);
+    						index += 1;
+    					} else {
+    						vendorPayoutObj['index_' + index] = {};
+    						vendorPayoutObj['index_' + index]['payout_vendor'] = result.getValue(col);
+    					}
+    				}
+    			
+    		});
+    		log.debug({
+    			title: "vendorPayoutObj value check",
+    			details: vendorPayoutObj
+    		});
+    		return vendorPayoutObj;
+    	}
+    	else {
+			log.error({
+				title: 'ERROR IN funtion getMultiVendorPayoutObj',
+				details: 'MORE THAN 1 OR NO RECORD FOUND FOR ITEM ID  : ' + itemId
+			});
+    	}
+    		
     }
 
     exports.config = {
@@ -198,7 +277,8 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
                     search.createColumn({name: "custrecord_pid_salesorder_line_id", label: "Sales Order Line ID"}),
                     search.createColumn({name: "custrecord_pid_transaction_currency", label: "Transaction Currency"}),
                     search.createColumn({name: "custrecord_pid_vendor_link", label: "Vendor Link"}),
-                    search.createColumn({name: "custrecord_pid_item", label: "Item"})
+                    search.createColumn({name: "custrecord_pid_item", label: "Item"}),
+                    search.createColumn({name: "custrecord_pid_item_quantity", label: "Item Quantity"})
                 ]
         });
     };
@@ -210,7 +290,34 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
             title: 'Context check',
             details: context
         });
-        var payableObjArr = createPayableObj(JSON.parse(context.value));
+        
+        var payableObjArr = [];
+        
+    	const MULTI_VENDOR_ITEMS = getMultiVendorItems();
+    	// TODO handle if the item is content anytime (payout tables)
+        
+    	var contextValue = JSON.parse(context.value);
+    	
+    	if(MULTI_VENDOR_ITEMS.indexOf(contextValue.values.custrecord_pid_item.value) > -1) {
+    		// item is multi-vendor item 
+    		// create object based on "content anytime" requirements
+    		
+    		var multiVenPayoutObjs = getMultiVendorPayoutObjs(contextValue.values.custrecord_pid_item.value);
+    		
+    		for (index in multiVenPayoutObjs) {
+    			
+    			var multiVenPayoutObj = multiVenPayoutObjs[index];
+    			
+    			payableObjArr.push(createPayableObj(contextValue, true, multiVenPayoutObj));
+    		}
+    		
+    		
+    	} else {
+    	
+    		payableObjArr.push(createPayableObj(contextValue, false));
+    	}
+    	
+    	 
         
         log.debug('Length of payableObjArr' + payableObjArr.length);
 
