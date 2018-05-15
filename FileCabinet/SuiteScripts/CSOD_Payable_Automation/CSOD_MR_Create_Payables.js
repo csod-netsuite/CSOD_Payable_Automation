@@ -17,7 +17,7 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
     var scriptObj = runtime.getCurrentScript();
 
     function PayableObj(){
-        this.id = null;
+    	this.payableId = null;
         this.isSpecial = null;
         this.isMultiyearLine = null;
         this.numberOfYears = null;
@@ -36,7 +36,6 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
         this.salesOrderLineId = null;
         this.amount = 0;
         this.trandate = null;
-        this.payableId = null;
     };
 
 
@@ -64,26 +63,35 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
             title: 'payableIdObj Check',
             details: payableIdObj
         });
-    	
-        // TODO handle multiVenPayoutObj
-        /**
-         {payout_vendor: "30284", payout_percent: "30.0%"}
-         */
         
-    	var returnArr = [];
-        var headerObj = new PayableObj();
+
 
         var startDate = payableIdObj.values.custrecord_pid_start_date;
         var endDate = payableIdObj.values.custrecord_pid_end_date;
-        var totalAmount = +payableIdObj.values.custrecord_pid_payable_amount;
+        
+        // getting values to determine for multi-year line
+        var momentStartDate = moment(startDate);
+        var momentEndDate = moment(endDate);
+
+        // get difference between start and end date in days and years
+        var contractLengthDays = Math.abs(momentEndDate.diff(momentStartDate, 'days'));
+        // Length in years
+        var contractLengthYears = (+contractLengthDays%365) > 362 ? Math.round(+contractLengthDays/365) : Math.ceil(+contractLengthDays/365);
+        
         var salesOrderId = payableIdObj.values.custrecord_pid_saleorder_link.value;
+        var totalAmount = +payableIdObj.values.custrecord_pid_payable_amount;
+        
         var lineUniqueId = payableIdObj.values.custrecord_pid_salesorder_line_id;
         var salesOrderCurrency = payableIdObj.values.custrecord_pid_transaction_currency.value;
-        var vendonId = payableIdObj.values.custrecord_pid_vendor_link.value;
+        var vendonId;
+        if(multiVendor) {
+        	vendonId = multiVenPayoutObj.payout_vendor;
+        } else {
+        	vendonId = payableIdObj.values.custrecord_pid_vendor_link.value;
+        }
         var itemQuantity = payableIdObj.values.custrecord_pid_item_quantity;
         var itemId = payableIdObj.values.custrecord_pid_item;
         
-
         // lookup for Sales Order record
         var soLookups = search.lookupFields({
             type: search.Type.SALES_ORDER,
@@ -98,67 +106,68 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
             columns: ['currency', 'custentity_csod_use_primary_curr_payable']
         });
 
-        // getting values to determine for multi-year line
-        var momentStartDate = moment(startDate);
-        var momentEndDate = moment(endDate);
-
-        // get difference between start and end date in days and years
-        var contractLengthDays = Math.abs(momentEndDate.diff(momentStartDate, 'days'));
-        // Length in years
-        var contractLengthYears = (+contractLengthDays%365) > 362 ? Math.round(+contractLengthDays/365) : Math.ceil(+contractLengthDays/365);
-        headerObj.isMultiyearLine =  contractLengthYears > 1;
-        headerObj.numberOfYears = contractLengthYears;
-        headerObj.startdate = momentStartDate._d;
-        headerObj.enddate = momentEndDate._d;
-        headerObj.vendor = vendonId;
-        headerObj.salesOrderLineId = lineUniqueId;
-        headerObj.salesorder = salesOrderId;
-        headerObj.payableId = payableIdObj.id;
-
-        if(vendorLookups.currency[0]) {
-            headerObj.vendorCurrency = vendorLookups.currency[0].value;
-        }
-        if(vendorLookups.custentity_csod_use_primary_curr_payable) {
-            headerObj.useVendorCurrency = true;
-        }
-
-        if(soLookups.department[0]) {
-            headerObj.department = soLookups.department[0].value;
-        }
-
-        if(soLookups.location[0]) {
-            headerObj.location = soLookups.location[0].value;
-        }
-
-        if(soLookups.subsidiary[0]) {
-            headerObj.subsidiary = soLookups.subsidiary[0].value;
-        }
-        
-        if(soLookups.entity[0]) {
-        	headerObj.customer = soLookups.entity[0].value;
-        }
-
-        log.debug({
-            title: "Some Values Check",
-            details: 'startDate = ' + startDate + ", endDate = " + endDate + ", Currency ID = " + salesOrderCurrency
-        });
-        
+        var returnArr = [];
+        var tranDateTemp = null;
         // append object to returnArr
         for(var i = 1; i <= contractLengthYears; i++) {
-        	if(headerObj.trandate === null) {
-        		headerObj.trandate = momentStartDate._d
+        	
+            var headerObj = new PayableObj();
+
+            headerObj.payableId = payableIdObj.id;
+            headerObj.isMultiyearLine =  contractLengthYears > 1;
+            headerObj.numberOfYears = contractLengthYears;
+            headerObj.startdate = momentStartDate._d;
+            headerObj.enddate = momentEndDate._d;
+            headerObj.vendor = vendonId;
+            headerObj.salesOrderLineId = lineUniqueId;
+            headerObj.salesorder = salesOrderId;
+            
+            if(vendorLookups.currency[0]) {
+                headerObj.vendorCurrency = vendorLookups.currency[0].value;
+            }
+            
+            if(vendorLookups.custentity_csod_use_primary_curr_payable) {
+                headerObj.useVendorCurrency = true;
+            }
+
+            if(soLookups.department[0]) {
+                headerObj.department = soLookups.department[0].value;
+            }
+
+            if(soLookups.location[0]) {
+                headerObj.location = soLookups.location[0].value;
+            }
+
+            if(soLookups.subsidiary[0]) {
+                headerObj.subsidiary = soLookups.subsidiary[0].value;
+            }
+            
+            if(soLookups.entity[0]) {
+            	headerObj.customer = soLookups.entity[0].value;
+            }
+        	
+        	if(tranDateTemp === null) {
+        		headerObj.trandate = momentStartDate._d;
+        		tranDateTemp = momentStartDate._d;
         	} else {
-        		headerObj.trandate = moment(headerObj.trandate).add(12, 'months')._d
+        		headerObj.trandate = moment(tranDateTemp).add(12, 'months')._d;
+        		tranDateTemp = moment(tranDateTemp).add(12, 'months')._d;
         	}
         	
-        	headerObj.items = [createPayableObjItem(totalAmount, contractLengthYears, itemQuantity, momentStartDate._d, momentEndDate._d)];
+        	if(i == contractLengthYears) {
+        		tranDateTemp = null;
+        	}
         	
-        	returnArr.push(headerObj);
+        	headerObj.items = [createPayableObjItem(totalAmount, contractLengthYears, itemQuantity, 
+        			momentStartDate._d, momentEndDate._d, multiVendor, multiVenPayoutObj)];    	
         	
         	log.debug({
         		title: 'headerObj value check',
         		details: headerObj
         	});
+        	
+        	returnArr.push(headerObj);
+        	
         }
 
         return returnArr;
@@ -166,13 +175,17 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
     
     
 
-    function createPayableObjItem(totalAmount, numOfYears, qty, startDate, endDate) {
+    function createPayableObjItem(totalAmount, numOfYears, qty, startDate, endDate, multiVendor, multiVenPayoutObj) {
     	var lineObj = new PayableItemsObj();
     	
+    	var payoutPct = (multiVendor) ? parseFloat(multiVenPayoutObj.payout_percent) : 1;
+    	
+    	log.debug("payoutPct = " + payoutPct);
+    	
     	if(numOfYears > 1) {
-    		lineObj.amount = totalAmount / numOfYears;
+    		lineObj.amount = (totalAmount / numOfYears) / payoutPct;
     	} else {
-    		lineObj.amount = totalAmount;
+    		lineObj.amount = totalAmount / payoutPct;
     	}
     	
     	lineObj.rate = lineObj.amount / qty;
@@ -307,26 +320,62 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
     		for (index in multiVenPayoutObjs) {
     			
     			var multiVenPayoutObj = multiVenPayoutObjs[index];
-    			
     			payableObjArr.push(createPayableObj(contextValue, true, multiVenPayoutObj));
+    			log.debug({
+    	        	title: "Final PayableObjArr value check",
+    	        	details: payableObjArr
+    	        });
     		}
     		
     		
     	} else {
     	
     		payableObjArr.push(createPayableObj(contextValue, false));
+    		
+    		log.debug({
+            	title: "Final PayableObjArr value check",
+            	details: payableObjArr
+            });
     	}
-    	
-    	 
-        
-        log.debug('Length of payableObjArr' + payableObjArr.length);
 
-        // TODO create vendor bill records
+        context.write({
+        	key: contextValue.id,
+        	value: payableObjArr
+        });
 
     };
+    
+    var reduce = function(context) {
+    	
+    	log.debug({
+    		title: 'context value check',
+    		details: context
+    	});
+    	
+    	var contextValue = JSON.parse(context.values[0]);
+    	
+    	log.audit('contextValues length in reduce = ' + contextValue.length);
+    	
+    	for(var i = 0; i < contextValue.length; i++) {
+    		
+			log.debug({
+				title: 'contextValue loop value check',
+				details: contextValue[i]
+			}) ;
+    		
+			var payableObjArr = contextValue[i];
+			
+			for(var x = 0; x < payableArr.length; x++) {
+				var payableOjb = payableObjArr[x];
+			}
+    		
+    	}
+    	
+    }
 
     exports.getInputData = getInputData;
     exports.map = map;
+    exports.reduce = reduce;
 
     return exports;
 });
