@@ -367,6 +367,9 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
 			
 			for(var x = 0; x < payableArr.length; x++) {
 				var payableOjb = payableObjArr[x];
+				
+				
+				
 			}
     		
     	}
