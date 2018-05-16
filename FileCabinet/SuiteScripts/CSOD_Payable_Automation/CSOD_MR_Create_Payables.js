@@ -269,6 +269,80 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
     		
     }
 
+   function createNewVendorBill(payableObj) {
+        var newVendorBillRec = record.create({
+            type: record.Type.VENDOR_BILL,
+            isDynamic: true
+        });
+
+        newVendorBillRec.setValue({
+            fieldId: 'entity',
+            value: payableObj.vendor
+        });
+
+       newVendorBillRec.setValue({
+            fieldId: 'department',
+            value: payableObj.department
+       });
+
+       newVendorBillRec.setValue({
+           fieldId: 'location',
+           value: payableObj.location
+       });
+
+       newVendorBillRec.setValue({
+           fieldId: 'custbody_sales_order',
+           value: payableObj.salesorder
+       });
+
+       newVendorBillRec.setValue({
+           fieldId: 'custbody_customer',
+           value: payableObj.customer
+       });
+
+       newVendorBillRec.setValue({
+           fieldId: 'custbody_customer',
+           value: payableObj.customer
+       });
+
+       if(payableObj.useVendorCurrency) {
+           newVendorBillRec.setValue({
+               fieldId: 'custbody_csod_use_primary_curr',
+               value: true
+           });
+       }
+
+       newVendorBillRec.setValue({
+           fieldId: 'currency',
+           value: payableObj.currency
+       });
+
+       newVendorBillRec.setValue({
+           fieldId: 'custbody_created_by_payables_scrpt',
+           value: true
+       });
+
+       newVendorBillRec.setValue({
+           fieldId: 'custbody_csod_so_line_id',
+           value: payableObj.salesOrderLineId
+       });
+
+       newVendorBillRec.setValue({
+           fieldId: 'trandate',
+           value: payableObj.trandate
+       });
+
+       newVendorBillRec.setText({
+           fieldId: 'approvalstatus',
+           value: 'Pending Approval'
+       });
+
+       payableObj.items.forEach(function(itemObj){
+
+       });
+
+    }
+
     exports.config = {
         exitOnError: false
     };
@@ -307,8 +381,7 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
         var payableObjArr = [];
         
     	const MULTI_VENDOR_ITEMS = getMultiVendorItems();
-    	// TODO handle if the item is content anytime (payout tables)
-        
+
     	var contextValue = JSON.parse(context.value);
     	
     	if(MULTI_VENDOR_ITEMS.indexOf(contextValue.values.custrecord_pid_item.value) > -1) {
@@ -355,21 +428,25 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
     	var contextValue = JSON.parse(context.values[0]);
     	
     	log.audit('contextValues length in reduce = ' + contextValue.length);
+
+    	var recordNumbersToCreate = 0;
+    	var recordCreatedArr = [];
     	
     	for(var i = 0; i < contextValue.length; i++) {
     		
-			log.debug({
-				title: 'contextValue loop value check',
-				details: contextValue[i]
-			}) ;
-    		
 			var payableObjArr = contextValue[i];
-			
-			for(var x = 0; x < payableArr.length; x++) {
+            recordNumbersToCreate = payableObjArr.length;
+
+			for(var x = 0; x < payableObjArr.length; x++) {
 				var payableOjb = payableObjArr[x];
-				
-				
-				
+
+				log.debug({
+                    title: 'payableOjb',
+                    details: payableOjb
+                });
+
+				var newVendorBillRecId = createNewVendorBill(payableOjb);
+
 			}
     		
     	}

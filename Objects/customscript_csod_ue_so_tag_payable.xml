@@ -1,7 +1,7 @@
 <usereventscript scriptid="customscript_csod_ue_so_tag_payable">
   <aftersubmitfunction></aftersubmitfunction>
-  <beforeloadfunction>beforeSubmit</beforeloadfunction>
-  <beforesubmitfunction></beforesubmitfunction>
+  <beforeloadfunction></beforeloadfunction>
+  <beforesubmitfunction>beforeSubmit</beforesubmitfunction>
   <description></description>
   <isinactive>F</isinactive>
   <name>CSOD UE Sales Order Tag Payable ID</name>
@@ -10,13 +10,44 @@
   <notifyowner>T</notifyowner>
   <notifyuser>F</notifyuser>
   <scriptfile>[/SuiteScripts/CSOD_Payable_Automation/CSOD_UE_Tag_Payable_Rec.js]</scriptfile>
+  <scriptcustomfields>
+    <scriptcustomfield scriptid="custscript_csod_referral_item_payable">
+      <accesslevel>2</accesslevel>
+      <applyformatting>F</applyformatting>
+      <checkspelling>F</checkspelling>
+      <defaultchecked>F</defaultchecked>
+      <defaultselection></defaultselection>
+      <defaultvalue></defaultvalue>
+      <description></description>
+      <displayheight></displayheight>
+      <displaytype>NORMAL</displaytype>
+      <displaywidth></displaywidth>
+      <dynamicdefault></dynamicdefault>
+      <fieldtype>SELECT</fieldtype>
+      <help></help>
+      <isformula>F</isformula>
+      <ismandatory>F</ismandatory>
+      <label>CSOD Referral Item for Payable</label>
+      <linktext></linktext>
+      <maxlength></maxlength>
+      <maxvalue></maxvalue>
+      <minvalue></minvalue>
+      <onparentdelete>SET_NULL</onparentdelete>
+      <searchlevel>2</searchlevel>
+      <selectrecordtype>-10</selectrecordtype>
+      <setting></setting>
+      <storevalue>T</storevalue>
+    </scriptcustomfield>
+  </scriptcustomfields>
   <scriptdeployments>
     <scriptdeployment scriptid="customdeploy_csod_ue_so_tag_payable">
       <allemployees>F</allemployees>
       <allpartners>F</allpartners>
       <allroles>F</allroles>
       <audslctrole></audslctrole>
+      <custscript_csod_referral_item_payable>188</custscript_csod_referral_item_payable>
       <eventtype></eventtype>
+      <executeinwebstore>F</executeinwebstore>
       <isdeployed>T</isdeployed>
       <loglevel>DEBUG</loglevel>
       <recordtype>SALESORDER</recordtype>
