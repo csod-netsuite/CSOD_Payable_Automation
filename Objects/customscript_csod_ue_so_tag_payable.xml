@@ -43,7 +43,7 @@
     <scriptdeployment scriptid="customdeploy_csod_ue_so_tag_payable">
       <allemployees>F</allemployees>
       <allpartners>F</allpartners>
-      <allroles>F</allroles>
+      <allroles>T</allroles>
       <audslctrole></audslctrole>
       <custscript_csod_referral_item_payable>188</custscript_csod_referral_item_payable>
       <eventtype></eventtype>
@@ -51,8 +51,8 @@
       <isdeployed>T</isdeployed>
       <loglevel>DEBUG</loglevel>
       <recordtype>SALESORDER</recordtype>
-      <runasrole></runasrole>
-      <status>TESTING</status>
+      <runasrole>ADMINISTRATOR</runasrole>
+      <status>RELEASED</status>
     </scriptdeployment>
   </scriptdeployments>
 </usereventscript>

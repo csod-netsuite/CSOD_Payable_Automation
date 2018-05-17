@@ -18,59 +18,30 @@ function(record, runtime) {
      * @param {string} scriptContext.type - Trigger type
      * @Since 2015.2
      */
+	
+	var exports = {};
 
+    const REFERRAL_ITEM = runtime.getCurrentScript().getParameter('custscript_csod_referral_item_payable');
 
     function createPayableId(scriptContext) {
 
-        var newRec = scriptContext.newRecord;
-        var oldRec = scriptContext.oldRecord;
-
-        log.debug({title: 'newRec value', details: newRec});
-
-        var REFERRAL_ITEM = runtime.getCurrentScript().getParameter('custscript_csod_referral_item_payable');
-
-        // Header Level
-        var referralPartner = newRec.getValue('entity');
-        var referralFee = newRec.getValue('id');
-
-        log.debug({
-            title: 'referral value check',
-            details: 'referralPartner = ' + referralPartner + ', referralFee' + referralFee
-        });
-
-        // create payable ID
-        if(referralPartner && referralFee > 0) {
-            // custbody_csod_referral_payable_id
-            var referralPaybleObj = createReferralPayableObj(newRec, REFERRAL_ITEM);
-            var newPayableId = createPayableId(referralPaybleObj);
-
-            if(newPayableId) {
-                newRec.setValue({
-                    fieldId: 'custbody_csod_referral_payable_id',
-                    value: newPayableId
-                });
-            }
-        }
-
-
-        // Line Level
-        var itemLineCount = newRec.getLineCount('item');
+        var itemLineCount = scriptContext.newRecord.getLineCount('item');
         var numLinesUpdated = 0;
 
         for(var i = 0; i < itemLineCount; i++) {
-            var payableId = newRec.getSublistValue({
+            var payableId = scriptContext.newRecord.getSublistValue({
                 sublistId: 'item',
                 fieldId: 'custcol_csod_payable_id',
                 line: i
             });
 
-            var contentFee = +newRec.getSublistValue({
+            var contentFee = +scriptContext.newRecord.getSublistValue({
                 sublistId: 'item',
                 fieldId: 'custcol_content_provider_fee',
                 line: i
             });
 
-            var vendorId = +newRec.getSublistValue({
+            var vendorId = +scriptContext.newRecord.getSublistValue({
                 sublistId: 'item',
                 fieldId: 'custcol_preferred_vendor',
                 line: i
@@ -80,13 +51,13 @@ function(record, runtime) {
             if(!payableId && contentFee > 0) {
                 if(vendorId) {
 
-                    var orderLineObj = createOrlineLineObj(newRec, i);
+                    var orderLineObj = createOrlineLineObj(scriptContext.newRecord, i);
                     var newPayableRecId = createNewPayableIdRecord(orderLineObj);
                     
                     log.audit('New Payable Record Created with ID: ' + newPayableRecId);
                     
                     if(newPayableRecId) {
-                    	newRec.setSublistValue({
+                    	scriptContext.newRecord.setSublistValue({
                     		sublistId: 'item',
                     		fieldId: 'custcol_csod_payable_id',
                     		line: i,
@@ -100,6 +71,29 @@ function(record, runtime) {
         }
         
         log.audit("createPayableId - Num of Lines Changed : " + numLinesUpdated);
+        
+        // Header Level
+        var referralPartner = scriptContext.newRecord.getValue('custbody_reseller_referral_partner');
+        var referralFee = +scriptContext.newRecord.getValue('custbody_reseller_referral_fee');
+
+        log.audit({
+            title: 'referral value check',
+            details: 'referralPartner = ' + referralPartner + ', referralFee' + referralFee
+        });
+
+        // create payable ID
+        if(referralPartner && referralFee > 0) {
+            // custbody_csod_referral_payable_id
+            var referralPaybleObj = createReferralPayableObj(scriptContext.newRecord, REFERRAL_ITEM);
+            var newPayableId = createNewPayableIdRecord(referralPaybleObj);
+
+            if(newPayableId) {
+            	scriptContext.newRecord.setValue({
+                    fieldId: 'custbody_csod_referral_payable_id',
+                    value: newPayableId
+                });
+            }
+        }
     }
 
 
@@ -221,8 +215,8 @@ function(record, runtime) {
 
 
 
-    return {
-        beforeSubmit: createPayableId
-    };
+    exports.beforeSubmit = createPayableId;
+    
+    return exports;
     
 });

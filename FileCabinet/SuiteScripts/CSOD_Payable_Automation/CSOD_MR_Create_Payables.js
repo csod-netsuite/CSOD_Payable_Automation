@@ -56,6 +56,13 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
         this.contentprovfee = null;
     };
     
+    function convertToDate(timeString) {
+    	return format.format({
+    		value: moment(timeString)._d,
+    		type: format.Type.DATETIMETZ
+    	});
+    }
+    
 
     function createPayableObj(payableIdObj, multiVendor, multiVenPayoutObj) {
 
@@ -63,8 +70,6 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
             title: 'payableIdObj Check',
             details: payableIdObj
         });
-        
-
 
         var startDate = payableIdObj.values.custrecord_pid_start_date;
         var endDate = payableIdObj.values.custrecord_pid_end_date;
@@ -90,7 +95,7 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
         	vendonId = payableIdObj.values.custrecord_pid_vendor_link.value;
         }
         var itemQuantity = payableIdObj.values.custrecord_pid_item_quantity;
-        var itemId = payableIdObj.values.custrecord_pid_item;
+        var itemId = payableIdObj.values.custrecord_pid_item.value;
         
         // lookup for Sales Order record
         var soLookups = search.lookupFields({
@@ -121,6 +126,7 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
             headerObj.vendor = vendonId;
             headerObj.salesOrderLineId = lineUniqueId;
             headerObj.salesorder = salesOrderId;
+            headerObj.currency = salesOrderCurrency;
             
             if(vendorLookups.currency[0]) {
                 headerObj.vendorCurrency = vendorLookups.currency[0].value;
@@ -158,7 +164,7 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
         		tranDateTemp = null;
         	}
         	
-        	headerObj.items = [createPayableObjItem(totalAmount, contractLengthYears, itemQuantity, 
+        	headerObj.items = [createPayableObjItem(itemId, totalAmount, contractLengthYears, itemQuantity, 
         			momentStartDate._d, momentEndDate._d, multiVendor, multiVenPayoutObj)];    	
         	
         	log.debug({
@@ -175,7 +181,7 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
     
     
 
-    function createPayableObjItem(totalAmount, numOfYears, qty, startDate, endDate, multiVendor, multiVenPayoutObj) {
+    function createPayableObjItem(itemId, totalAmount, numOfYears, qty, startDate, endDate, multiVendor, multiVenPayoutObj) {
     	var lineObj = new PayableItemsObj();
     	
     	var payoutPct = (multiVendor) ? parseFloat(multiVenPayoutObj.payout_percent) : 1;
@@ -187,7 +193,7 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
     	} else {
     		lineObj.amount = totalAmount / payoutPct;
     	}
-    	
+    	lineObj.item = itemId
     	lineObj.rate = lineObj.amount / qty;
     	lineObj.startdate = startDate;
     	lineObj.enddate = endDate;
@@ -300,11 +306,6 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
            value: payableObj.customer
        });
 
-       newVendorBillRec.setValue({
-           fieldId: 'custbody_customer',
-           value: payableObj.customer
-       });
-
        if(payableObj.useVendorCurrency) {
            newVendorBillRec.setValue({
                fieldId: 'custbody_csod_use_primary_curr',
@@ -314,8 +315,13 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
 
        newVendorBillRec.setValue({
            fieldId: 'currency',
-           value: payableObj.currency
+           value: payableObj.vendorCurrency
        });
+       
+       newVendorBillRec.setValue({
+           fieldId: 'custbody_csod_payable_id',
+           value: payableObj.payableId
+       })
 
        newVendorBillRec.setValue({
            fieldId: 'custbody_created_by_payables_scrpt',
@@ -329,7 +335,7 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
 
        newVendorBillRec.setValue({
            fieldId: 'trandate',
-           value: payableObj.trandate
+           value: moment(payableObj.trandate)._d
        });
 
        newVendorBillRec.setText({
@@ -337,9 +343,73 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
            value: 'Pending Approval'
        });
 
-       payableObj.items.forEach(function(itemObj){
+       payableObj.items.forEach(function(itemObj) {
+    	   
+    	   log.debug({
+    		   title: 'itemObj',
+    		   details: itemObj
+    	   });
+    	   	newVendorBillRec.selectNewLine({
+                sublistId: 'item'
+            });
+
+    	   	newVendorBillRec.setCurrentSublistValue({
+                sublistId: 'item',
+                fieldId: 'custcol_expense_date',
+                value: moment(payableObj.trandate)._d
+            });
+
+    	   	newVendorBillRec.setCurrentSublistValue({
+                sublistId: 'item',
+                fieldId: 'item',
+                value: itemObj.item
+            });
+
+    	   	newVendorBillRec.setCurrentSublistValue({
+                sublistId: 'item',
+                fieldId: 'rate',
+                value: itemObj.rate
+            });
+
+    	   	newVendorBillRec.setCurrentSublistValue({
+                sublistId: 'item',
+                fieldId: 'amount',
+                value: itemObj.amount
+            });
+
+    	   	newVendorBillRec.setCurrentSublistValue({
+                sublistId: 'item',
+                fieldId: 'location',
+                value: payableObj.location
+            });
+
+    	   	newVendorBillRec.setCurrentSublistValue({
+                sublistId: 'item',
+                fieldId: 'amortizstartdate',
+                value: moment(payableObj.trandate)._d
+            });
+    	   	
+           newVendorBillRec.setCurrentSublistValue({
+               sublistId: 'item',
+               fieldId: 'amortizationenddate',
+               value: moment(payableObj.trandate).add(364, 'days')._d
+           });
+
+           newVendorBillRec.commitLine({
+              sublistId: 'item'
+           });
 
        });
+
+       try{
+           return newVendorBillRec.save();
+       } catch(e) {
+           log.error({
+               title: 'Error While Creating Payable Record',
+               details: e
+           });
+       }
+
 
     }
 
@@ -435,21 +505,32 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
     	for(var i = 0; i < contextValue.length; i++) {
     		
 			var payableObjArr = contextValue[i];
-            recordNumbersToCreate = payableObjArr.length;
+            recordNumbersToCreate = payableObjArr.length * contextValue.length;
 
 			for(var x = 0; x < payableObjArr.length; x++) {
-				var payableOjb = payableObjArr[x];
+				var payableObj = payableObjArr[x];
 
-				log.debug({
-                    title: 'payableOjb',
-                    details: payableOjb
-                });
+				try {
+                    var newVendorBillRecId = createNewVendorBill(payableObj);
+                    recordCreatedArr.push(newVendorBillRecId);
+                } catch(e) {
+				    log.error({
+                        title: 'createNewVendorBill',
+                        details: e
+                    });
+                }
 
-				var newVendorBillRecId = createNewVendorBill(payableOjb);
+				log.audit(newVendorBillRecId + " created");
+
 
 			}
     		
     	}
+    	
+    	log.audit({
+    		title: 'Record Length Check',
+    		details: 'recordNumbersToCreate = ' + recordNumbersToCreate + ', recordCreatedArr = ' +  recordCreatedArr.length
+    	});
     	
     }
 
