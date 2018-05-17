@@ -125,8 +125,6 @@ function(record, runtime) {
         custrecord_pid_item_quantity: quantity
         */
 
-
-
         var orderLineObj = {};
 
         orderLineObj.custrecord_pid_item = newRec.getSublistValue({
@@ -163,13 +161,19 @@ function(record, runtime) {
 
         orderLineObj.custrecord_pid_start_date = newRec.getSublistValue({
             sublistId: 'item',
-            fieldId: 'custcol_plan_start_date',
+            fieldId: 'custcol_tran_start_date:',
             line: lineNum
         });
 
         orderLineObj.custrecord_pid_end_date = newRec.getSublistValue({
             sublistId: 'item',
-            fieldId: 'custcol_plan_end_date',
+            fieldId: 'custcol_tran_end_date',
+            line: lineNum
+        });
+
+        orderLineObj.custrecord_pid_so_line_amount = newRec.getSublistValue({
+            sublistId: 'item',
+            fieldId: 'amount',
             line: lineNum
         });
 
@@ -212,8 +216,6 @@ function(record, runtime) {
     		});
     	}
     };
-
-
 
     exports.beforeSubmit = createPayableId;
     

@@ -85,8 +85,11 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
         
         var salesOrderId = payableIdObj.values.custrecord_pid_saleorder_link.value;
         var totalAmount = +payableIdObj.values.custrecord_pid_payable_amount;
-        
-        var lineUniqueId = payableIdObj.values.custrecord_pid_salesorder_line_id;
+        var lineUniqueId = '';
+        if(payableIdObj.values.custrecord_pid_salesorder_line_id) {
+            lineUniqueId = payableIdObj.values.custrecord_pid_salesorder_line_id;
+        }
+
         var salesOrderCurrency = payableIdObj.values.custrecord_pid_transaction_currency.value;
         var vendonId;
         if(multiVendor) {
@@ -164,7 +167,7 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
         		tranDateTemp = null;
         	}
         	
-        	headerObj.items = [createPayableObjItem(itemId, totalAmount, contractLengthYears, itemQuantity, 
+        	headerObj.items = [createPayableObjItem(itemId, lineUniqueId, totalAmount, contractLengthYears, itemQuantity,
         			momentStartDate._d, momentEndDate._d, multiVendor, multiVenPayoutObj)];    	
         	
         	log.debug({
@@ -181,18 +184,25 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
     
     
 
-    function createPayableObjItem(itemId, totalAmount, numOfYears, qty, startDate, endDate, multiVendor, multiVenPayoutObj) {
+    function createPayableObjItem(itemId, lineUniqueId, totalAmount, numOfYears, qty, startDate, endDate, multiVendor, multiVenPayoutObj) {
     	var lineObj = new PayableItemsObj();
     	
     	var payoutPct = (multiVendor) ? parseFloat(multiVenPayoutObj.payout_percent) : 1;
     	
     	log.debug("payoutPct = " + payoutPct);
+
+    	if(lineUniqueId) {
+            if(numOfYears > 1) {
+                lineObj.amount = (totalAmount / numOfYears) / payoutPct;
+            } else {
+                lineObj.amount = totalAmount / payoutPct;
+            }
+        } else {
+    	    // if lineUniqueId is falsy value, the amount remains the same throughout the years
+    	    lineObj.amount = totalAmount
+        }
     	
-    	if(numOfYears > 1) {
-    		lineObj.amount = (totalAmount / numOfYears) / payoutPct;
-    	} else {
-    		lineObj.amount = totalAmount / payoutPct;
-    	}
+
     	lineObj.item = itemId
     	lineObj.rate = lineObj.amount / qty;
     	lineObj.startdate = startDate;
@@ -248,15 +258,18 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
     					
     					
     					var col = result.columns[i];
-    					
-    					if(col.name.indexOf('percent') > -1) {
-    						
-    						vendorPayoutObj['index_' + index]['payout_percent'] = result.getValue(col);
-    						index += 1;
-    					} else {
-    						vendorPayoutObj['index_' + index] = {};
-    						vendorPayoutObj['index_' + index]['payout_vendor'] = result.getValue(col);
-    					}
+
+    					if(result.getValue(col)) {
+                            if(col.name.indexOf('percent') > -1) {
+
+                                vendorPayoutObj['index_' + index]['payout_percent'] = result.getValue(col);
+                                index += 1;
+                            } else {
+                                vendorPayoutObj['index_' + index] = {};
+                                vendorPayoutObj['index_' + index]['payout_vendor'] = result.getValue(col);
+                            }
+                        }
+
     				}
     			
     		});
@@ -338,9 +351,9 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
            value: moment(payableObj.trandate)._d
        });
 
-       newVendorBillRec.setText({
+       newVendorBillRec.setValue({
            fieldId: 'approvalstatus',
-           value: 'Pending Approval'
+           value: '1'
        });
 
        payableObj.items.forEach(function(itemObj) {
@@ -531,7 +544,24 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
     		title: 'Record Length Check',
     		details: 'recordNumbersToCreate = ' + recordNumbersToCreate + ', recordCreatedArr = ' +  recordCreatedArr.length
     	});
-    	
+
+    	if(recordNumbersToCreate == recordCreatedArr.length) {
+            var payableId = contextValue[0][0].payableId;
+            log.debug({
+                title: 'payableId',
+                details: payableId
+            });
+
+            record.submitFields({
+                type: 'customrecord_csod_pid',
+                id: payableId,
+                values: {
+                    custrecord_pid_all_bills_created: true
+                }
+            });
+        } else {
+    	    // TODO delete all created bills
+        }
     }
 
     exports.getInputData = getInputData;
