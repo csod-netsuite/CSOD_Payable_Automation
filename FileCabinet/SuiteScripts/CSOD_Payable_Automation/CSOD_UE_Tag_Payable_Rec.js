@@ -161,7 +161,7 @@ function(record, runtime) {
 
         orderLineObj.custrecord_pid_start_date = newRec.getSublistValue({
             sublistId: 'item',
-            fieldId: 'custcol_tran_start_date:',
+            fieldId: 'custcol_tran_start_date',
             line: lineNum
         });
 

@@ -185,17 +185,23 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
     
 
     function createPayableObjItem(itemId, lineUniqueId, totalAmount, numOfYears, qty, startDate, endDate, multiVendor, multiVenPayoutObj) {
+
+        log.debug({
+            title: 'amount check and year check',
+            details: 'amount = ' + totalAmount + ', numbOfYears = ' + numOfYears
+        });
+
     	var lineObj = new PayableItemsObj();
-    	
-    	var payoutPct = (multiVendor) ? parseFloat(multiVenPayoutObj.payout_percent) : 1;
+
+    	var payoutPct = (multiVendor) ? parseFloat(multiVenPayoutObj.payout_percent)/100 : 1;
     	
     	log.debug("payoutPct = " + payoutPct);
 
     	if(lineUniqueId) {
             if(numOfYears > 1) {
-                lineObj.amount = (totalAmount / numOfYears) / payoutPct;
+                lineObj.amount = (totalAmount / numOfYears) * payoutPct;
             } else {
-                lineObj.amount = totalAmount / payoutPct;
+                lineObj.amount = totalAmount * payoutPct;
             }
         } else {
     	    // if lineUniqueId is falsy value, the amount remains the same throughout the years
@@ -208,6 +214,11 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
     	lineObj.startdate = startDate;
     	lineObj.enddate = endDate;
     	lineObj.quantity = qty;
+
+    	log.debug({
+            title: 'item lineObj value check',
+            details: lineObj
+        });
     	
     	return lineObj
     }
@@ -435,6 +446,9 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
             type: "customrecord_csod_pid",
             filters:
                 [
+                    // TODO erase comments below later
+                    //["custrecord_pid_saleorder_link.status","noneof","SalesOrd:H","SalesOrd:C","SalesOrd:A"],
+                    //"AND",
                     ["custrecord_pid_all_bills_created","is","F"]
                 ],
             columns:

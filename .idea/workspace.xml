@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e641eec8-81f7-48a5-83ce-f6fe0d035596" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change beforePath="$PROJECT_DIR$/FileCabinet/SuiteScripts/CSOD_Payable_Automation/CSOD_MR_Create_Payables.js" afterPath="$PROJECT_DIR$/FileCabinet/SuiteScripts/CSOD_Payable_Automation/CSOD_MR_Create_Payables.js" />
       <change beforePath="$PROJECT_DIR$/FileCabinet/SuiteScripts/CSOD_Payable_Automation/CSOD_UE_Tag_Payable_Rec.js" afterPath="$PROJECT_DIR$/FileCabinet/SuiteScripts/CSOD_Payable_Automation/CSOD_UE_Tag_Payable_Rec.js" />
     </list>
@@ -26,8 +27,8 @@
       <file leaf-file-name="CSOD_MR_Create_Payables.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/FileCabinet/SuiteScripts/CSOD_Payable_Automation/CSOD_MR_Create_Payables.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-583">
-              <caret line="41" column="31" lean-forward="true" selection-start-line="41" selection-start-column="31" selection-end-line="41" selection-end-column="31" />
+            <state relative-caret-position="495">
+              <caret line="203" column="46" lean-forward="false" selection-start-line="203" selection-start-column="46" selection-end-line="203" selection-end-column="46" />
               <folding />
             </state>
           </provider>
@@ -36,8 +37,8 @@
       <file leaf-file-name="CSOD_UE_Tag_Payable_Rec.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/FileCabinet/SuiteScripts/CSOD_Payable_Automation/CSOD_UE_Tag_Payable_Rec.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="318">
-              <caret line="183" column="49" lean-forward="true" selection-start-line="183" selection-start-column="49" selection-end-line="183" selection-end-column="49" />
+            <state relative-caret-position="3570">
+              <caret line="170" column="25" lean-forward="true" selection-start-line="170" selection-start-column="25" selection-end-line="170" selection-end-column="25" />
               <folding />
             </state>
           </provider>
@@ -57,6 +58,7 @@
       <find>Payable.prototype.</find>
       <find>payableIdObj Check</find>
       <find>Final PayableObjArr value check</find>
+      <find>totalAmount</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -67,8 +69,8 @@
       <list>
         <option value="$PROJECT_DIR$/.sdf" />
         <option value="$PROJECT_DIR$/Objects/customscript_csod_ue_so_tag_payable.xml" />
-        <option value="$PROJECT_DIR$/FileCabinet/SuiteScripts/CSOD_Payable_Automation/CSOD_MR_Create_Payables.js" />
         <option value="$PROJECT_DIR$/FileCabinet/SuiteScripts/CSOD_Payable_Automation/CSOD_UE_Tag_Payable_Rec.js" />
+        <option value="$PROJECT_DIR$/FileCabinet/SuiteScripts/CSOD_Payable_Automation/CSOD_MR_Create_Payables.js" />
       </list>
     </option>
   </component>
@@ -190,12 +192,12 @@
       <workItem from="1526524372380" duration="103000" />
       <workItem from="1526524492554" duration="23000" />
       <workItem from="1526524524214" duration="7663000" />
-      <workItem from="1526574714326" duration="5140000" />
+      <workItem from="1526574714326" duration="7087000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="47925000" />
+    <option name="totallyTimeSpent" value="49872000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -208,7 +210,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1440" height="823" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.18957011" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3286517" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -218,7 +219,7 @@
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3286517" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.1994382" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.1994382" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -594,16 +595,16 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/FileCabinet/SuiteScripts/CSOD_Payable_Automation/CSOD_UE_Tag_Payable_Rec.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="318">
-          <caret line="183" column="49" lean-forward="true" selection-start-line="183" selection-start-column="49" selection-end-line="183" selection-end-column="49" />
+        <state relative-caret-position="3570">
+          <caret line="170" column="25" lean-forward="true" selection-start-line="170" selection-start-column="25" selection-end-line="170" selection-end-column="25" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/FileCabinet/SuiteScripts/CSOD_Payable_Automation/CSOD_MR_Create_Payables.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-583">
-          <caret line="41" column="31" lean-forward="true" selection-start-line="41" selection-start-column="31" selection-end-line="41" selection-end-column="31" />
+        <state relative-caret-position="495">
+          <caret line="203" column="46" lean-forward="false" selection-start-line="203" selection-start-column="46" selection-end-line="203" selection-end-column="46" />
           <folding />
         </state>
       </provider>
