@@ -75,23 +75,27 @@ function(record, runtime) {
         // Header Level
         var referralPartner = scriptContext.newRecord.getValue('custbody_reseller_referral_partner');
         var referralFee = +scriptContext.newRecord.getValue('custbody_reseller_referral_fee');
+        var referralPayableId = scriptContext.newRecord.getValue('custbody_csod_referral_payable_id');
 
         log.audit({
             title: 'referral value check',
             details: 'referralPartner = ' + referralPartner + ', referralFee' + referralFee
         });
 
-        // create payable ID
-        if(referralPartner && referralFee > 0) {
-            // custbody_csod_referral_payable_id
-            var referralPaybleObj = createReferralPayableObj(scriptContext.newRecord, REFERRAL_ITEM);
-            var newPayableId = createNewPayableIdRecord(referralPaybleObj);
+        // if referralPayableId is empty 
+        if(!referralPayableId) {
+            // create payable ID
+            if(referralPartner && referralFee > 0 ) {
+                // custbody_csod_referral_payable_id
+                var referralPaybleObj = createReferralPayableObj(scriptContext.newRecord, REFERRAL_ITEM);
+                var newPayableId = createNewPayableIdRecord(referralPaybleObj);
 
-            if(newPayableId) {
-            	scriptContext.newRecord.setValue({
-                    fieldId: 'custbody_csod_referral_payable_id',
-                    value: newPayableId
-                });
+                if(newPayableId) {
+                	scriptContext.newRecord.setValue({
+                        fieldId: 'custbody_csod_referral_payable_id',
+                        value: newPayableId
+                    });
+                }
             }
         }
     }

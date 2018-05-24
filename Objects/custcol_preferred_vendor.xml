@@ -51,7 +51,7 @@
       <fldfiltercomparetype>EQ</fldfiltercomparetype>
       <fldfilternotnull>F</fldfilternotnull>
       <fldfilternull>F</fldfilternull>
-      <fldfiltersel>[ACCOUNT_SPECIFIC_VALUE]</fldfiltersel>
+      <fldfiltersel>77</fldfiltersel>
       <fldfilterval></fldfilterval>
     </customfieldfilter>
   </customfieldfilters>

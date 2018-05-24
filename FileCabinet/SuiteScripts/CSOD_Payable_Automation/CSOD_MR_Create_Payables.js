@@ -447,8 +447,8 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
             filters:
                 [
                     // TODO erase comments below later
-                    //["custrecord_pid_saleorder_link.status","noneof","SalesOrd:H","SalesOrd:C","SalesOrd:A"],
-                    //"AND",
+                    ["custrecord_pid_saleorder_link.status","noneof","SalesOrd:H","SalesOrd:C","SalesOrd:A"],
+                    "AND",
                     ["custrecord_pid_all_bills_created","is","F"]
                 ],
             columns:
