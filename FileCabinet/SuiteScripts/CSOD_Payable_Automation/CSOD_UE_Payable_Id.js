@@ -35,8 +35,8 @@ function(ui) {
     	if(requestMessage == 'success') {
     		//client.showAlert();
     		
-    		// !DEVELOPER NOTE : N/ui/message isn't supported in beforeLoad user event script. The code below is to get around the limitation.
-    		
+    		// !DEVELOPER NOTE : N/ui/message isn't supported in beforeLoad user event script. The code below is exploit code.
+    		// TODO: Change this code once Enhancement 387483 is released
         	var inline = form.addField({
                 id:'custpage_trigger_it',
                 label:'not shown',

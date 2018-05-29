@@ -335,13 +335,18 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
                fieldId: 'custbody_csod_use_primary_curr',
                value: true
            });
+
+           newVendorBillRec.setValue({
+               fieldId: 'currency',
+               value: payableObj.vendorCurrency;
+           });
+       } else {
+           newVendorBillRec.setValue({
+               fieldId: 'currency',
+               value: payableObj.currency;
+           });
        }
 
-       newVendorBillRec.setValue({
-           fieldId: 'currency',
-           value: payableObj.vendorCurrency
-       });
-       
        newVendorBillRec.setValue({
            fieldId: 'custbody_csod_payable_id',
            value: payableObj.payableId

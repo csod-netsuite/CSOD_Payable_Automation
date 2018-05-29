@@ -46,6 +46,12 @@ function(record, runtime) {
                 fieldId: 'custcol_preferred_vendor',
                 line: i
             });
+
+            var updatePayable = scriptContext.newRecord.getSublistValue({
+                sublistId: 'item',
+                fieldId: 'custcol_csod_update_line_payable',
+                line: i
+            });
             
             // only run if payableId is empty
             if(!payableId && contentFee > 0) {
@@ -68,6 +74,64 @@ function(record, runtime) {
                     }
                 }
             }
+
+            // update payable record
+            // if payableId is not empty and
+            if(payableId && updatePayable) {
+
+                var paramsObj = {};
+
+                paramsObj.custrecord_pid_item =  scriptContext.newRecord.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'item',
+                    line: i
+                });
+
+                paramsObj.custrecord_pid_so_line_amount = scriptContext.newRecord.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'amount',
+                    line: i
+                });
+
+                paramsObj.scriptContext.newRecord.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'custcol_plan_end_date',
+                    line: i
+                });
+
+                paramsObj.scriptContext.newRecord.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'custcol_plan_start_date',
+                    line: i
+                });
+
+                paramsObj.scriptContext.newRecord.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'custcol_content_provider_fee',
+                    line: i
+                });
+
+                paramsObj.scriptContext.newRecord.getSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'quantity',
+                    line: i
+                });
+
+                record.submitFields({
+                    type: 'customrecord_csod_pid',
+                    id: payableId,
+                    values: paramsObj,
+                    options: {
+                        enableSourcing: false,
+                        ignoreMandatoryFields: true
+                    }
+
+                })
+
+
+
+            }
+
         }
         
         log.audit("createPayableId - Num of Lines Changed : " + numLinesUpdated);

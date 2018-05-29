@@ -1,0 +1,26 @@
+<suitelet scriptid="customscript_csod_sl_payable_del_bills">
+  <defaultfunction>onRequest</defaultfunction>
+  <description></description>
+  <isinactive>F</isinactive>
+  <name>CSOD SL Payable Delete Bills</name>
+  <notifyadmins>F</notifyadmins>
+  <notifyemails></notifyemails>
+  <notifyowner>T</notifyowner>
+  <notifyuser>F</notifyuser>
+  <scriptfile>[/SuiteScripts/CSOD_Payable_Automation/CSOD_SL_Payable_Delete_Bills.js]</scriptfile>
+  <scriptdeployments>
+    <scriptdeployment scriptid="customdeploy1">
+      <allemployees>F</allemployees>
+      <allpartners>F</allpartners>
+      <allroles>T</allroles>
+      <audslctrole></audslctrole>
+      <eventtype></eventtype>
+      <isdeployed>T</isdeployed>
+      <isonline>T</isonline>
+      <loglevel>DEBUG</loglevel>
+      <runasrole>ADMINISTRATOR</runasrole>
+      <status>RELEASED</status>
+      <title>CSOD SL Payable Delete Bills</title>
+    </scriptdeployment>
+  </scriptdeployments>
+</suitelet>
