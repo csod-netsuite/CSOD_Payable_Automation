@@ -93,31 +93,31 @@ function(record, runtime) {
                     line: i
                 });
 
-                paramsObj.scriptContext.newRecord.getSublistValue({
+                paramsObj.custrecord_pid_end_date = scriptContext.newRecord.getSublistValue({
                     sublistId: 'item',
                     fieldId: 'custcol_plan_end_date',
                     line: i
                 });
 
-                paramsObj.scriptContext.newRecord.getSublistValue({
+                paramsObj.custrecord_pid_start_date = scriptContext.newRecord.getSublistValue({
                     sublistId: 'item',
                     fieldId: 'custcol_plan_start_date',
                     line: i
                 });
 
-                paramsObj.scriptContext.newRecord.getSublistValue({
+                paramsObj.custrecord_pid_payable_amount = scriptContext.newRecord.getSublistValue({
                     sublistId: 'item',
                     fieldId: 'custcol_content_provider_fee',
                     line: i
                 });
 
-                paramsObj.scriptContext.newRecord.getSublistValue({
+                paramsObj.custrecord_pid_item_quantity = scriptContext.newRecord.getSublistValue({
                     sublistId: 'item',
                     fieldId: 'quantity',
                     line: i
                 });
 
-                record.submitFields({
+                var updatedPayableID = record.submitFields({
                     type: 'customrecord_csod_pid',
                     id: payableId,
                     values: paramsObj,
@@ -126,10 +126,16 @@ function(record, runtime) {
                         ignoreMandatoryFields: true
                     }
 
-                })
+                });
 
-
-
+                // uncheck custcol_csod_update_line_payable
+                if(updatedPayableID) {
+                    scriptContext.newRecord.setCurrentSublistValue({
+                        sublistId: 'item',
+                        fieldId: 'custcol_csod_update_line_payable',
+                        value: false
+                    });
+                }
             }
 
         }
