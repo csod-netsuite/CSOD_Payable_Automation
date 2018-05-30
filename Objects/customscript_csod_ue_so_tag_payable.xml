@@ -1,7 +1,7 @@
 <usereventscript scriptid="customscript_csod_ue_so_tag_payable">
-  <aftersubmitfunction></aftersubmitfunction>
+  <aftersubmitfunction>afterSubmit</aftersubmitfunction>
   <beforeloadfunction></beforeloadfunction>
-  <beforesubmitfunction>beforeSubmit</beforesubmitfunction>
+  <beforesubmitfunction></beforesubmitfunction>
   <description></description>
   <isinactive>F</isinactive>
   <name>CSOD UE Sales Order Tag Payable ID</name>

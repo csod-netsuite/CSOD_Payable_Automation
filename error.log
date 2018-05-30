@@ -94,3 +94,15 @@ com.netsuite.ide.exception.CliException: Invalid option "-s".
 2018-05-29 11:36:06,854 - File: ~/Objects/customscript_csod_mr_create_payables.xml
 2018-05-29 11:36:06,855 - Object: customscript_csod_mr_create_payables (mapreducescript)
 2018-05-29 11:36:06,855 - 2018-05-29 11:36:06 (PST) Installation FAILED (0 minutes 3 seconds)
+2018-05-30 09:46:36,892 - *** ERROR ***
+2018-05-30 09:46:36,893 - 
+2018-05-30 09:46:36,893 - An error occurred during custom object update.
+2018-05-30 09:46:36,893 - File: ~/Objects/customscript_csod_mr_create_payables.xml
+2018-05-30 09:46:36,893 - Object: customscript_csod_mr_create_payables (mapreducescript)
+2018-05-30 09:46:36,893 - 2018-05-30 09:46:36 (PST) Installation FAILED (0 minutes 2 seconds)
+2018-05-30 11:14:17,217 - *** ERROR ***
+2018-05-30 11:14:17,218 - 
+2018-05-30 11:14:17,218 - An error occurred during custom object update.
+2018-05-30 11:14:17,218 - File: ~/Objects/customscript_csod_mr_create_payables.xml
+2018-05-30 11:14:17,218 - Object: customscript_csod_mr_create_payables (mapreducescript)
+2018-05-30 11:14:17,218 - 2018-05-30 11:14:17 (PST) Installation FAILED (0 minutes 2 seconds)

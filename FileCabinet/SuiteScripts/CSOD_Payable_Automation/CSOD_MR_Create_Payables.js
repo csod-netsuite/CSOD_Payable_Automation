@@ -338,19 +338,19 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
 
            newVendorBillRec.setValue({
                fieldId: 'currency',
-               value: payableObj.vendorCurrency;
+               value: payableObj.vendorCurrency
            });
        } else {
            newVendorBillRec.setValue({
                fieldId: 'currency',
-               value: payableObj.currency;
+               value: payableObj.currency
            });
        }
 
        newVendorBillRec.setValue({
            fieldId: 'custbody_csod_payable_id',
            value: payableObj.payableId
-       })
+       });
 
        newVendorBillRec.setValue({
            fieldId: 'custbody_created_by_payables_scrpt',
@@ -439,6 +439,18 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
            });
        }
 
+
+    }
+
+    function deleteBills(billsArr) {
+        for(var i = 0; i < billsArr.length; i++) {
+            var deletedRecId = record.delete({
+                type: record.Type.VENDOR_BILL,
+                id: billsArr[i]
+            });
+
+            log.audit("Deleted Vendor Bill ID : " + deletedRecId);
+        }
 
     }
 
@@ -579,7 +591,7 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
                 }
             });
         } else {
-    	    // TODO delete all created bills
+            deleteBills(recordCreatedArr);
         }
     }
 

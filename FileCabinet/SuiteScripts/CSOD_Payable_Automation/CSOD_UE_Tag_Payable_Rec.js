@@ -292,7 +292,7 @@ function(record, runtime) {
     	}
     };
 
-    exports.beforeSubmit = createPayableId;
+    exports.afterSubmit = createPayableId;
     
     return exports;
     
