@@ -95,13 +95,13 @@ function(record, runtime) {
 
                 paramsObj.custrecord_pid_end_date = scriptContext.newRecord.getSublistValue({
                     sublistId: 'item',
-                    fieldId: 'custcol_plan_end_date',
+                    fieldId: 'custcol_tran_end_date',
                     line: i
                 });
 
                 paramsObj.custrecord_pid_start_date = scriptContext.newRecord.getSublistValue({
                     sublistId: 'item',
-                    fieldId: 'custcol_plan_start_date',
+                    fieldId: 'custcol_tran_start_date',
                     line: i
                 });
 
@@ -130,10 +130,11 @@ function(record, runtime) {
 
                 // uncheck custcol_csod_update_line_payable
                 if(updatedPayableID) {
-                    scriptContext.newRecord.setCurrentSublistValue({
+                    scriptContext.newRecord.setSublistValue({
                         sublistId: 'item',
                         fieldId: 'custcol_csod_update_line_payable',
-                        value: false
+                        value: false,
+                        line: i
                     });
                 }
             }

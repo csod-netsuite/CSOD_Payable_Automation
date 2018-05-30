@@ -12,8 +12,8 @@ define(['N/record', 'N/search'], function (record, search) {
      */
     var exports = {};
 
-    var SUBLIST_FIELDS_TO_UPDATE = ['item', 'amount', 'custcol_plan_end_date',
-        'custcol_plan_start_date', 'custcol_content_provider_fee', 'quantity'];
+    var SUBLIST_FIELDS_TO_UPDATE = ['item', 'amount', 'custcol_tran_end_date',
+        'custcol_tran_start_date', 'custcol_content_provider_fee', 'quantity'];
 
     var FIELDS_MAP = {
         item: 'custrecord_pid_item',
@@ -34,7 +34,7 @@ define(['N/record', 'N/search'], function (record, search) {
 
         if(sublistName == 'item' && SUBLIST_FIELDS_TO_UPDATE.indexOf(sublistFieldName) > -1) {
 
-            var linePayableId = currRecord.getSublistValue({sublistId: 'item', fieldId: 'custcol_csod_payable_id', line: line});
+            var linePayableId = currRecord.getCurrentSublistValue({sublistId: 'item', fieldId: 'custcol_csod_payable_id'});
             if(linePayableId) {
 
                 if(!lookupLoaded) {
@@ -58,6 +58,8 @@ define(['N/record', 'N/search'], function (record, search) {
                             value: true
                         });
                     }
+                } else {
+                	alert("There are payable bills generated for this line. Please delete them first before making the changes");
                 }
 
             }
