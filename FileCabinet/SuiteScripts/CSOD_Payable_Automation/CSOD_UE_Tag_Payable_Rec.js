@@ -25,6 +25,13 @@ function(record, runtime) {
 
     function createPayableId(scriptContext) {
 
+        var salesOrderId = scriptContext.newRecord.id;
+
+        var soRecToResubmit = record.load({
+           type: record.Type.SALES_ORDER,
+           id: salesOrderId
+        });
+
         var itemLineCount = scriptContext.newRecord.getLineCount('item');
         var numLinesUpdated = 0;
 
@@ -63,7 +70,7 @@ function(record, runtime) {
                     log.audit('New Payable Record Created with ID: ' + newPayableRecId);
                     
                     if(newPayableRecId) {
-                    	scriptContext.newRecord.setSublistValue({
+                        soRecToResubmit.setSublistValue({
                     		sublistId: 'item',
                     		fieldId: 'custcol_csod_payable_id',
                     		line: i,
@@ -130,18 +137,18 @@ function(record, runtime) {
 
                 // uncheck custcol_csod_update_line_payable
                 if(updatedPayableID) {
-                    scriptContext.newRecord.setSublistValue({
+                    soRecToResubmit.setSublistValue({
                         sublistId: 'item',
                         fieldId: 'custcol_csod_update_line_payable',
                         value: false,
                         line: i
                     });
+
+                    numLinesUpdated++
                 }
             }
 
         }
-        
-        log.audit("createPayableId - Num of Lines Changed : " + numLinesUpdated);
         
         // Header Level
         var referralPartner = scriptContext.newRecord.getValue('custbody_reseller_referral_partner');
@@ -162,12 +169,21 @@ function(record, runtime) {
                 var newPayableId = createNewPayableIdRecord(referralPaybleObj);
 
                 if(newPayableId) {
-                	scriptContext.newRecord.setValue({
+                    soRecToResubmit.setValue({
                         fieldId: 'custbody_csod_referral_payable_id',
                         value: newPayableId
                     });
+
+                	numLinesUpdated++;
                 }
             }
+        }
+
+        log.audit("createPayableId - Num of Lines Changed : " + numLinesUpdated);
+
+        if(numLinesUpdated > 0) {
+            var salesOrderId = soRecToResubmit.save();
+            log.audit(salesOrderId + ", resaved");
         }
     }
 

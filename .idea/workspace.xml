@@ -3,10 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="e641eec8-81f7-48a5-83ce-f6fe0d035596" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/FileCabinet/SuiteScripts/CSOD_Payable_Automation/CSOD_MR_Create_Payables.js" afterPath="$PROJECT_DIR$/FileCabinet/SuiteScripts/CSOD_Payable_Automation/CSOD_MR_Create_Payables.js" />
       <change beforePath="$PROJECT_DIR$/FileCabinet/SuiteScripts/CSOD_Payable_Automation/CSOD_UE_Tag_Payable_Rec.js" afterPath="$PROJECT_DIR$/FileCabinet/SuiteScripts/CSOD_Payable_Automation/CSOD_UE_Tag_Payable_Rec.js" />
-      <change beforePath="$PROJECT_DIR$/Objects/customscript_csod_ue_so_tag_payable.xml" afterPath="$PROJECT_DIR$/Objects/customscript_csod_ue_so_tag_payable.xml" />
-      <change beforePath="$PROJECT_DIR$/error.log" afterPath="$PROJECT_DIR$/error.log" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -82,28 +79,28 @@
       <file leaf-file-name="CSOD_UE_Payable_Id.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/FileCabinet/SuiteScripts/CSOD_Payable_Automation/CSOD_UE_Payable_Id.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="456">
+            <state relative-caret-position="162">
               <caret line="39" column="40" lean-forward="true" selection-start-line="39" selection-start-column="40" selection-end-line="39" selection-end-column="40" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="CSOD_UE_Tag_Payable_Rec.js" pinned="false" current-in-tab="false">
+      <file leaf-file-name="CSOD_UE_Tag_Payable_Rec.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/FileCabinet/SuiteScripts/CSOD_Payable_Automation/CSOD_UE_Tag_Payable_Rec.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="184">
-              <caret line="294" column="23" lean-forward="false" selection-start-line="294" selection-start-column="23" selection-end-line="294" selection-end-column="23" />
+            <state relative-caret-position="129">
+              <caret line="72" column="48" lean-forward="false" selection-start-line="72" selection-start-column="40" selection-end-line="72" selection-end-column="48" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="customscript_csod_ue_so_tag_payable.xml" pinned="false" current-in-tab="true">
+      <file leaf-file-name="customscript_csod_ue_so_tag_payable.xml" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Objects/customscript_csod_ue_so_tag_payable.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="21">
-              <caret line="1" column="34" lean-forward="false" selection-start-line="1" selection-start-column="34" selection-end-line="1" selection-end-column="34" />
+            <state relative-caret-position="210">
+              <caret line="10" column="28" lean-forward="true" selection-start-line="10" selection-start-column="28" selection-end-line="10" selection-end-column="28" />
               <folding />
             </state>
           </provider>
@@ -126,6 +123,8 @@
       <find>Final PayableObjArr value check</find>
       <find>totalAmount</find>
       <find>.getSublistValue</find>
+      <find>setValue</find>
+      <find>setSubli</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -138,8 +137,8 @@
         <option value="$PROJECT_DIR$/FileCabinet/SuiteScripts/CSOD_Payable_Automation/CSOD_UE_Payable_Id.js" />
         <option value="$PROJECT_DIR$/FileCabinet/SuiteScripts/CSOD_Payable_Automation/CSOD_CL_SalesOrder_Payable.js" />
         <option value="$PROJECT_DIR$/FileCabinet/SuiteScripts/CSOD_Payable_Automation/CSOD_MR_Create_Payables.js" />
-        <option value="$PROJECT_DIR$/FileCabinet/SuiteScripts/CSOD_Payable_Automation/CSOD_UE_Tag_Payable_Rec.js" />
         <option value="$PROJECT_DIR$/Objects/customscript_csod_ue_so_tag_payable.xml" />
+        <option value="$PROJECT_DIR$/FileCabinet/SuiteScripts/CSOD_Payable_Automation/CSOD_UE_Tag_Payable_Rec.js" />
       </list>
     </option>
   </component>
@@ -269,12 +268,12 @@
       <workItem from="1527180723540" duration="5660000" />
       <workItem from="1527611953512" duration="5625000" />
       <workItem from="1527620190745" duration="1388000" />
-      <workItem from="1527698091853" duration="2800000" />
+      <workItem from="1527698091853" duration="4185000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="66257000" />
+    <option name="totallyTimeSpent" value="67642000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -691,9 +690,17 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/Objects/customscript_csod_ue_so_tag_payable.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="210">
+          <caret line="10" column="28" lean-forward="true" selection-start-line="10" selection-start-column="28" selection-end-line="10" selection-end-column="28" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/FileCabinet/SuiteScripts/CSOD_Payable_Automation/CSOD_UE_Payable_Id.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="456">
+        <state relative-caret-position="162">
           <caret line="39" column="40" lean-forward="true" selection-start-line="39" selection-start-column="40" selection-end-line="39" selection-end-column="40" />
           <folding />
         </state>
@@ -701,16 +708,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/FileCabinet/SuiteScripts/CSOD_Payable_Automation/CSOD_UE_Tag_Payable_Rec.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="184">
-          <caret line="294" column="23" lean-forward="false" selection-start-line="294" selection-start-column="23" selection-end-line="294" selection-end-column="23" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Objects/customscript_csod_ue_so_tag_payable.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="21">
-          <caret line="1" column="34" lean-forward="false" selection-start-line="1" selection-start-column="34" selection-end-line="1" selection-end-column="34" />
+        <state relative-caret-position="129">
+          <caret line="72" column="48" lean-forward="false" selection-start-line="72" selection-start-column="40" selection-end-line="72" selection-end-column="48" />
           <folding />
         </state>
       </provider>

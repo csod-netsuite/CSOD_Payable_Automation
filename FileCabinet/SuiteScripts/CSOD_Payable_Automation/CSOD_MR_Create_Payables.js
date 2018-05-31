@@ -415,13 +415,13 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
     	   	newVendorBillRec.setCurrentSublistValue({
                 sublistId: 'item',
                 fieldId: 'amortizstartdate',
-                value: moment(payableObj.trandate)._d
+                value: moment(itemObj.startdate)._d
             });
     	   	
            newVendorBillRec.setCurrentSublistValue({
                sublistId: 'item',
                fieldId: 'amortizationenddate',
-               value: moment(payableObj.trandate).add(364, 'days')._d
+               value: moment(itemObj.enddate)._d
            });
 
            newVendorBillRec.commitLine({
