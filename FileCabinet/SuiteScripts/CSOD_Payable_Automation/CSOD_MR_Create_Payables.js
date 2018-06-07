@@ -324,6 +324,11 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
        });
 
        newVendorBillRec.setValue({
+           fieldId: 'location',
+           value: payableObj.subsidiary
+       });
+
+       newVendorBillRec.setValue({
            fieldId: 'custbody_sales_order',
            value: payableObj.salesorder
        });
