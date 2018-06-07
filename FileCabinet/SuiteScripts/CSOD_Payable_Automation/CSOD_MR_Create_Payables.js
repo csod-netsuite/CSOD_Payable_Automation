@@ -163,12 +163,9 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
         		tranDateTemp = moment(tranDateTemp).add(12, 'months')._d;
         	}
         	
-        	if(i == contractLengthYears) {
-        		tranDateTemp = null;
-        	}
         	
         	headerObj.items = [createPayableObjItem(itemId, lineUniqueId, totalAmount, contractLengthYears, itemQuantity,
-        			momentStartDate._d, momentEndDate._d, multiVendor, multiVenPayoutObj)];    	
+        			headerObj.trandate, multiVendor, multiVenPayoutObj)];    	
         	
         	log.debug({
         		title: 'headerObj value check',
@@ -177,6 +174,10 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
         	
         	returnArr.push(headerObj);
         	
+        	if(i == contractLengthYears) {
+        		tranDateTemp = null;
+        	}
+        	
         }
 
         return returnArr;
@@ -184,7 +185,7 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
     
     
 
-    function createPayableObjItem(itemId, lineUniqueId, totalAmount, numOfYears, qty, startDate, endDate, multiVendor, multiVenPayoutObj) {
+    function createPayableObjItem(itemId, lineUniqueId, totalAmount, numOfYears, qty, startDate, multiVendor, multiVenPayoutObj) {
 
         log.debug({
             title: 'amount check and year check',
@@ -208,7 +209,9 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
     	    lineObj.amount = totalAmount
         }
     	
-
+    	// add 364 days to start date for amortization schedule.
+    	var endDate = moment(startDate).add(365,'days')._d
+    	
     	lineObj.item = itemId
     	lineObj.rate = lineObj.amount / qty;
     	lineObj.startdate = startDate;
@@ -374,54 +377,63 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
 
        payableObj.items.forEach(function(itemObj) {
     	   
-    	   log.debug({
-    		   title: 'itemObj',
-    		   details: itemObj
-    	   });
-    	   	newVendorBillRec.selectNewLine({
-                sublistId: 'item'
-            });
-
-    	   	newVendorBillRec.setCurrentSublistValue({
-                sublistId: 'item',
-                fieldId: 'custcol_expense_date',
-                value: moment(payableObj.trandate)._d
-            });
-
-    	   	newVendorBillRec.setCurrentSublistValue({
-                sublistId: 'item',
-                fieldId: 'item',
-                value: itemObj.item
-            });
-
-    	   	newVendorBillRec.setCurrentSublistValue({
-                sublistId: 'item',
-                fieldId: 'rate',
-                value: itemObj.rate
-            });
-
-    	   	newVendorBillRec.setCurrentSublistValue({
-                sublistId: 'item',
-                fieldId: 'amount',
-                value: itemObj.amount
-            });
-
-    	   	newVendorBillRec.setCurrentSublistValue({
-                sublistId: 'item',
-                fieldId: 'location',
-                value: payableObj.location
-            });
-
-    	   	newVendorBillRec.setCurrentSublistValue({
-                sublistId: 'item',
-                fieldId: 'amortizstartdate',
-                value: moment(itemObj.startdate)._d
-            });
+		   log.debug({
+			   title: 'itemObj',
+			   details: itemObj
+		   });
+		   	newVendorBillRec.selectNewLine({
+	            sublistId: 'item'
+	        });
+	
+		   	newVendorBillRec.setCurrentSublistValue({
+	            sublistId: 'item',
+	            fieldId: 'custcol_expense_date',
+	            value: moment(payableObj.trandate)._d
+	        });
+	
+		   	newVendorBillRec.setCurrentSublistValue({
+	            sublistId: 'item',
+	            fieldId: 'item',
+	            value: itemObj.item
+	        });
+	
+		   	newVendorBillRec.setCurrentSublistValue({
+	            sublistId: 'item',
+	            fieldId: 'rate',
+	            value: itemObj.rate
+	        });
+	
+		   	newVendorBillRec.setCurrentSublistValue({
+	            sublistId: 'item',
+	            fieldId: 'amount',
+	            value: itemObj.amount
+	        });
+	
+		   	newVendorBillRec.setCurrentSublistValue({
+	            sublistId: 'item',
+	            fieldId: 'location',
+	            value: payableObj.location
+	        });
+	
+		   	newVendorBillRec.setCurrentSublistValue({
+	            sublistId: 'item',
+	            fieldId: 'amortizstartdate',
+	            value: moment(itemObj.startdate)._d
+		   	});
+    	   
+    	   // calculate end date for sub-period
+    	   
+    	   var tempEndDate = moment(itemObj.enddate)._d > moment(payableObj.enddate)._d ?
+    			   moment(payableObj.enddate)._d : moment(itemObj.enddate)._d;
+    			   
+    	
+    	  log.debug("amortization end date value check", 'start date : ' + moment(itemObj.startdate)._d + 'end date : ' + tempEndDate); 	
+    	   	
     	   	
            newVendorBillRec.setCurrentSublistValue({
                sublistId: 'item',
                fieldId: 'amortizationenddate',
-               value: moment(itemObj.enddate)._d
+               value: tempEndDate
            });
 
            newVendorBillRec.commitLine({

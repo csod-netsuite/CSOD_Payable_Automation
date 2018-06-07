@@ -3,11 +3,11 @@
  * @NScriptType UserEventScript
  * @NModuleScope SameAccount
  */
-define(['N/record', 'N/runtime'],
+define(['N/record', 'N/runtime', '../Lib/moment'],
 /**
  * @param {record} record
  */
-function(record, runtime) {
+function(record, runtime, moment) {
 
     /**
      * Function definition to be triggered before record is loaded.
@@ -23,7 +23,154 @@ function(record, runtime) {
 
     const REFERRAL_ITEM = runtime.getCurrentScript().getParameter('custscript_csod_referral_item_payable');
 
+
+    function clearPayableIdRec(scriptContext) {
+        if(scriptContext.type !== scriptContext.UserEventType.COPY) {
+            return; // only run this script if context type is 'copy'
+        }
+        var newRec = scriptContext.newRecord;
+        var headerPayableId = newRec.getValue('custbody_csod_referral_payable_id');
+
+        if(headerPayableId) {
+            newRec.setValue({
+                fieldId: 'custbody_csod_referral_payable_id',
+                value: ''
+            })
+        }
+
+        var itemLineCount = scriptContext.newRecord.getLineCount('item');
+        for(var i = 0; i < itemLineCount; i++) {
+            var linePayableId = newRec.getSublistValue({
+                sublistId: 'item',
+                fieldId: 'custcol_csod_payable_id',
+                line: i
+            });
+
+            if(linePayableId) {
+
+                newRec.setSublistValue({
+                    sublistId: 'item',
+                    fieldId: 'custcol_csod_payable_id',
+                    line: i,
+                    value: ''
+                });
+
+                newRec.setSublistText({
+                    sublistId: 'item',
+                    fieldId: 'custcol_csod_payable_id',
+                    line: i,
+                    text: ''
+                });
+
+            }
+        }
+
+    }
+    
+    function writeClassSubtotal(scriptContext) {
+
+        var startDate = scriptContext.newRecord.getValue('startdate');
+        var endDate = scriptContext.newRecord.getValue('enddate');
+
+        // getting values to determine for multi-year line
+        var momentStartDate = moment(startDate);
+        var momentEndDate = moment(endDate);
+
+        // get difference between start and end date in days and years
+        var contractLengthDays = Math.abs(momentEndDate.diff(momentStartDate, 'days'));
+        // Length in years
+        var contractLengthYears = (+contractLengthDays%365) > 362 ? Math.round(+contractLengthDays/365) : Math.ceil(+contractLengthDays/365);
+
+        var referralFee = +scriptContext.newRecord.getValue('custbody_reseller_referral_fee');
+
+        if(referralFee != 0) { // custbody_csod_non_commissionable
+            scriptContext.newRecord.setValue({
+                fieldId: 'custbody_csod_non_commissionable',
+                value: referralFee * contractLengthYears
+            })
+        }
+
+        var contentSubtotal = 0;
+    	var profServSubtotal = 0;
+    	var otherSubtotal = 0;
+    	var subscriptionSubtotal = 0;
+    	var contentFeeSubtotal = 0;
+
+    	var itemLineCount = scriptContext.newRecord.getLineCount('item');
+    	for(var i = 0; i < itemLineCount; i++) {
+    		
+    		var itemClass = scriptContext.newRecord.getSublistValue({
+    			sublistId: 'item',
+    			fieldId: 'class',
+    			line: i
+    		});
+
+    		var contentFee = +scriptContext.newRecord.getSublistValue({
+                sublistId: 'item',
+                fieldId: 'custcol_content_provider_fee',
+                line: i
+            });
+    		
+    		var amount = +scriptContext.newRecord.getSublistValue({
+    			sublistId: 'item',
+    			fieldId: 'amount',
+    			line: i
+    		});
+    		
+    		if (itemClass == '76') { //subscription
+
+                subscriptionSubtotal += amount;
+    		} else if (itemClass == '75') { //professional Services
+
+                profServSubtotal += amount;
+            } else if (itemClass == '39') { // other
+
+                otherSubtotal += amount;
+            } else if (itemClass == '77') { // content
+
+                contentSubtotal += amount;
+            }
+
+            if(contentFee != 0) { // custbody_csod_non_commiss_content
+                contentFeeSubtotal += contentFee;
+            }
+    		
+    	}  // end for loop
+
+        if(contentFeeSubtotal != 0){
+    	    scriptContext.newRecord.setValue({
+                fieldId: 'custbody_csod_non_commiss_content',
+                value: contentFeeSubtotal.toFixed(2)
+            })
+        }
+
+        scriptContext.newRecord.setValue({
+            fieldId: 'custbody_csod_subtotal_subscription',
+            value: subscriptionSubtotal.toFixed(2)
+        });
+
+        scriptContext.newRecord.setValue({
+            fieldId: 'custbody_csod_subtotal_ps',
+            value: profServSubtotal.toFixed(2)
+        });
+
+        scriptContext.newRecord.setValue({
+            fieldId: 'custbody_csod_subtotal_other',
+            value: otherSubtotal.toFixed(2)
+        });
+
+        scriptContext.newRecord.setValue({
+            fieldId: 'custbody_csod_content_subtotal',
+            value: contentSubtotal.toFixed(2)
+        });
+
+    }
+
     function createPayableId(scriptContext) {
+
+        if(scriptContext.type === scriptContext.UserEventType.DELETE) { // in delete event skip
+            return;
+        }
 
         var salesOrderId = scriptContext.newRecord.id;
 
@@ -308,6 +455,8 @@ function(record, runtime) {
     	}
     };
 
+    exports.beforeLoad = clearPayableIdRec;
+    exports.beforeSubmit = writeClassSubtotal;
     exports.afterSubmit = createPayableId;
     
     return exports;

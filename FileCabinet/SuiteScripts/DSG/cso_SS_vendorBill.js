@@ -258,7 +258,7 @@ function afterSubmit(type)
 				// Put the record into Workflow Resent for Re-approval
 				if(triggerWorkflow) {
 					var workflowId = nlapiTriggerWorkflow(nlapiGetRecordType(), 
-							nlapiGetRecordId(), 27, 'workflowaction87961', 'workflowstate56');
+							nlapiGetRecordId(), 27, 'workflowaction87992', 'workflowstate56');
 					
 					nlapiLogExecution('DEBUG', 'Workflow Triggered', workflowId);
 				}

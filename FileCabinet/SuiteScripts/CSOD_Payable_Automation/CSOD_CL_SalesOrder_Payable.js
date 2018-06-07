@@ -23,6 +23,8 @@ define(['N/record', 'N/search'], function (record, search) {
         custcol_content_provider_fee: 'custrecord_pid_payable_amount',
         quantity: 'custrecord_pid_item_quantity'
     };
+    
+    // TODO: add same logic for header level referral fee
 
     var updatePayableId = function(context) {
         var currRecord = context.currentRecord;
