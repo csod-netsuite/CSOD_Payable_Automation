@@ -43,16 +43,4 @@
   <sourcefrom>[scriptid=custitem_csod_content_vendor]</sourcefrom>
   <sourcelist>STDCOLITEM</sourcelist>
   <storevalue>T</storevalue>
-  <customfieldfilters>
-    <customfieldfilter>
-      <fldcomparefield></fldcomparefield>
-      <fldfilter>STDENTITYCLASS</fldfilter>
-      <fldfilterchecked></fldfilterchecked>
-      <fldfiltercomparetype>EQ</fldfiltercomparetype>
-      <fldfilternotnull>F</fldfilternotnull>
-      <fldfilternull>F</fldfilternull>
-      <fldfiltersel>77</fldfiltersel>
-      <fldfilterval></fldfilterval>
-    </customfieldfilter>
-  </customfieldfilters>
 </transactioncolumncustomfield>

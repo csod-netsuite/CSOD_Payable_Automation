@@ -24,6 +24,8 @@ function(record, runtime, moment) {
     const REFERRAL_ITEM = runtime.getCurrentScript().getParameter('custscript_csod_referral_item_payable');
 
 
+
+    /* BEFORE LOAD */
     function clearPayableIdRec(scriptContext) {
         if(scriptContext.type !== scriptContext.UserEventType.COPY) {
             return; // only run this script if context type is 'copy'
@@ -66,7 +68,9 @@ function(record, runtime, moment) {
         }
 
     }
-    
+
+
+    /* BEFORE SUBMIT */
     function writeClassSubtotal(scriptContext) {
 
         var startDate = scriptContext.newRecord.getValue('startdate');
@@ -166,12 +170,16 @@ function(record, runtime, moment) {
 
     }
 
+
+    /* AFTER SUBMIT */
     function createPayableId(scriptContext) {
 
         if(scriptContext.type === scriptContext.UserEventType.DELETE) { // in delete event skip
             return;
         }
 
+        var headerPayableUpdate = scriptContext.newRecord.getValue('custbody_csod_ref_payable_update');
+        var headerPayable = scriptContext.newRecord.getValue('custbody_csod_referral_payable_id');
         var salesOrderId = scriptContext.newRecord.id;
 
         var soRecToResubmit = record.load({
@@ -181,6 +189,37 @@ function(record, runtime, moment) {
 
         var itemLineCount = scriptContext.newRecord.getLineCount('item');
         var numLinesUpdated = 0;
+
+        if(headerPayableUpdate && headerPayable) {
+            var headerUpdateParam = {};
+            headerUpdateParam.custrecord_pid_start_date = scriptContext.newRecord.getValue('startdate');
+            headerUpdateParam.custrecord_pid_end_date = scriptContext.newRecord.getValue('enddate');
+            headerUpdateParam.custrecord_pid_payable_amount = scriptContext.newRecord.getValue('custbody_reseller_referral_fee');
+            headerUpdateParam.custrecord_pid_vendor_link = scriptContext.newRecord.getValue('custbody_reseller_referral_partner');
+
+
+            var updatedHeaderPayableID = record.submitFields({
+                type: 'customrecord_csod_pid',
+                id: headerPayable,
+                values: headerUpdateParam,
+                options: {
+                    enableSourcing: false,
+                    ignoreMandatoryFields: true
+                }
+
+            });
+
+            if(updatedHeaderPayableID) {
+
+                soRecToResubmit.setValue({
+                    fieldId: 'custbody_csod_ref_payable_update',
+                    value: false
+                });
+
+                numLinesUpdated++;
+            }
+
+        }
 
         for(var i = 0; i < itemLineCount; i++) {
             var payableId = scriptContext.newRecord.getSublistValue({

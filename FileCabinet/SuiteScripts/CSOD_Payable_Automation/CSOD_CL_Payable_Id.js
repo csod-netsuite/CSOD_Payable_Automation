@@ -1,7 +1,7 @@
 /**
  * @NApiVersion 2.x
  * @NScriptType ClientScript
- * @NModuleScope SameAccount
+ * @NModuleScope Public
  */
 define(['N/https', 'N/ui/message','../Lib/sweetalert.min'],
 
