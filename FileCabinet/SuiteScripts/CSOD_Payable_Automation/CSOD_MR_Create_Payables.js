@@ -187,16 +187,16 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
 
     function createPayableObjItem(itemId, lineUniqueId, totalAmount, numOfYears, qty, startDate, multiVendor, multiVenPayoutObj) {
 
+        /*
         log.debug({
             title: 'amount check and year check',
             details: 'amount = ' + totalAmount + ', numbOfYears = ' + numOfYears
-        });
-
+        });*/
     	var lineObj = new PayableItemsObj();
 
     	var payoutPct = (multiVendor) ? parseFloat(multiVenPayoutObj.payout_percent)/100 : 1;
     	
-    	log.debug("payoutPct = " + payoutPct);
+    	//log.debug("payoutPct = " + payoutPct);
 
     	if(lineUniqueId) {
             if(numOfYears > 1) {
@@ -382,10 +382,10 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
 
        payableObj.items.forEach(function(itemObj) {
     	   
-		   log.debug({
+		   /*log.debug({
 			   title: 'itemObj',
 			   details: itemObj
-		   });
+		   });*/
 		   	newVendorBillRec.selectNewLine({
 	            sublistId: 'item'
 	        });
@@ -432,7 +432,7 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
     			   moment(payableObj.enddate)._d : moment(itemObj.enddate)._d;
     			   
     	
-    	  log.debug("amortization end date value check", 'start date : ' + moment(itemObj.startdate)._d + 'end date : ' + tempEndDate); 	
+    	  //log.debug("amortization end date value check", 'start date : ' + moment(itemObj.startdate)._d + 'end date : ' + tempEndDate);
     	   	
     	   	
            newVendorBillRec.setCurrentSublistValue({
@@ -480,7 +480,6 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
             type: "customrecord_csod_pid",
             filters:
                 [
-                    // TODO erase comments below later
                     ["custrecord_pid_saleorder_link.status","noneof","SalesOrd:H","SalesOrd:C","SalesOrd:A"],
                     "AND",
                     ["custrecord_pid_all_bills_created","is","F"]

@@ -250,7 +250,7 @@ function(record, runtime, moment) {
             if(!payableId && contentFee > 0) {
                 if(vendorId) {
 
-                    var orderLineObj = createOrlineLineObj(scriptContext.newRecord, i);
+                    var orderLineObj = createOrlineLineObj(soRecToResubmit, i);
                     var newPayableRecId = createNewPayableIdRecord(orderLineObj);
                     
                     log.audit('New Payable Record Created with ID: ' + newPayableRecId);
