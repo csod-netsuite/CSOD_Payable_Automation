@@ -7,6 +7,25 @@
   <notifyowner>T</notifyowner>
   <scriptfile>[/SuiteScripts/CSOD_Payable_Automation/CSOD_MR_Create_Payables.js]</scriptfile>
   <scriptdeployments>
+    <scriptdeployment scriptid="customdeploy_create_payable_sched">
+      <buffersize>16</buffersize>
+      <concurrencylimit>3</concurrencylimit>
+      <isdeployed>T</isdeployed>
+      <loglevel>DEBUG</loglevel>
+      <queueallstagesatonce>T</queueallstagesatonce>
+      <runasrole>ADMINISTRATOR</runasrole>
+      <status>SCHEDULED</status>
+      <yieldaftermins>60</yieldaftermins>
+      <recurrence>
+        <daily>
+          <enddate></enddate>
+          <everyxdays>1</everyxdays>
+          <repeat>PT1H</repeat>
+          <startdate>2018-06-08</startdate>
+          <starttime>07:00:00Z</starttime>
+        </daily>
+      </recurrence>
+    </scriptdeployment>
     <scriptdeployment scriptid="customdeploy_dply_adhoc_1">
       <buffersize>32</buffersize>
       <concurrencylimit>1</concurrencylimit>

@@ -1,5 +1,5 @@
-define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'], 
-		function (search, record, runtime, moment, format) {
+define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format', 'N/email'],
+		function (search, record, runtime, moment, format, email) {
 
     /**
      * Creates Payable Bills off of Payable ID (Custom Record)
@@ -15,6 +15,16 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
 
     var exports = {};
     var scriptObj = runtime.getCurrentScript();
+
+	// Change: 08/07/2018
+	// Stop CyberU bills from creating.
+	const CYBERU_ID = '301';
+	
+	// Change: 8/16/2018
+	// Default to Account ID for content 
+	const PARTNER_BILL_ITEM_ID = '188';
+	const CONTENT_AP = '268';
+	const RESELLER_AP = '583';
 
     function PayableObj(){
     	this.payableId = null;
@@ -36,6 +46,7 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
         this.salesOrderLineId = null;
         this.amount = 0;
         this.trandate = null;
+        this.apAccount = null;
     };
 
 
@@ -55,14 +66,46 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
         this.preferredvendor = null;
         this.contentprovfee = null;
     };
-    
+
     function convertToDate(timeString) {
     	return format.format({
     		value: moment(timeString)._d,
     		type: format.Type.DATETIMETZ
     	});
     }
-    
+
+    function validatePayableId(payableId) {
+    	var salesorderSearchObj = search.create({
+    		   type: "salesorder",
+    		   filters:
+    		   [
+    		      ["type","anyof","SalesOrd"],
+    		      "AND",
+    		      [["custcol_csod_payable_id","anyof",payableId],"OR",["custbody_csod_referral_payable_id","anyof",payableId]]
+    		   ],
+    		   columns:
+    		   [
+    		      search.createColumn({
+    		         name: "internalid",
+    		         summary: "GROUP",
+    		         label: "Internal ID"
+    		      })
+    		   ]
+    		});
+    		var searchResultCount = salesorderSearchObj.runPaged().count;
+    		log.debug("validatePayableId result count", searchResultCount);
+
+    		if(searchResultCount === 1) {
+    			return true;
+    		} else {
+
+    			log.error("STRAY PAYABLE ID FOUND", "Payable ID = " + payableId + " has no or more than 1 Sales Orders");
+    			return false;
+
+    		}
+
+    }
+
 
     function createPayableObj(payableIdObj, multiVendor, multiVenPayoutObj) {
 
@@ -73,7 +116,7 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
 
         var startDate = payableIdObj.values.custrecord_pid_start_date;
         var endDate = payableIdObj.values.custrecord_pid_end_date;
-        
+
         // getting values to determine for multi-year line
         var momentStartDate = moment(startDate);
         var momentEndDate = moment(endDate);
@@ -82,7 +125,7 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
         var contractLengthDays = Math.abs(momentEndDate.diff(momentStartDate, 'days'));
         // Length in years
         var contractLengthYears = (+contractLengthDays%365) > 362 ? Math.round(+contractLengthDays/365) : Math.ceil(+contractLengthDays/365);
-        
+
         var salesOrderId = payableIdObj.values.custrecord_pid_saleorder_link.value;
         var totalAmount = +payableIdObj.values.custrecord_pid_payable_amount;
         var lineUniqueId = '';
@@ -100,6 +143,14 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
         var itemQuantity = payableIdObj.values.custrecord_pid_item_quantity;
         var itemId = payableIdObj.values.custrecord_pid_item.value;
         
+        var apAccount = ''; 
+        
+        if(itemId == PARTNER_BILL_ITEM_ID) {
+        	apAccount = RESELLER_AP;
+        } else {
+        	apAccount = CONTENT_AP;
+        }
+
         // lookup for Sales Order record
         var soLookups = search.lookupFields({
             type: search.Type.SALES_ORDER,
@@ -118,7 +169,7 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
         var tranDateTemp = null;
         // append object to returnArr
         for(var i = 1; i <= contractLengthYears; i++) {
-        	
+
             var headerObj = new PayableObj();
 
             headerObj.payableId = payableIdObj.id;
@@ -130,11 +181,14 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
             headerObj.salesOrderLineId = lineUniqueId;
             headerObj.salesorder = salesOrderId;
             headerObj.currency = salesOrderCurrency;
+            headerObj.apAccount = apAccount;
+           
             
+
             if(vendorLookups.currency[0]) {
                 headerObj.vendorCurrency = vendorLookups.currency[0].value;
             }
-            
+
             if(vendorLookups.custentity_csod_use_primary_curr_payable) {
                 headerObj.useVendorCurrency = true;
             }
@@ -150,11 +204,11 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
             if(soLookups.subsidiary[0]) {
                 headerObj.subsidiary = soLookups.subsidiary[0].value;
             }
-            
+
             if(soLookups.entity[0]) {
             	headerObj.customer = soLookups.entity[0].value;
             }
-        	
+
         	if(tranDateTemp === null) {
         		headerObj.trandate = momentStartDate._d;
         		tranDateTemp = momentStartDate._d;
@@ -162,28 +216,28 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
         		headerObj.trandate = moment(tranDateTemp).add(12, 'months')._d;
         		tranDateTemp = moment(tranDateTemp).add(12, 'months')._d;
         	}
-        	
-        	
+
+
         	headerObj.items = [createPayableObjItem(itemId, lineUniqueId, totalAmount, contractLengthYears, itemQuantity,
-        			headerObj.trandate, multiVendor, multiVenPayoutObj)];    	
-        	
+        			headerObj.trandate, multiVendor, multiVenPayoutObj)];
+
         	log.debug({
         		title: 'headerObj value check',
         		details: headerObj
         	});
-        	
+
         	returnArr.push(headerObj);
-        	
+
         	if(i == contractLengthYears) {
         		tranDateTemp = null;
         	}
-        	
+
         }
 
         return returnArr;
     }
-    
-    
+
+
 
     function createPayableObjItem(itemId, lineUniqueId, totalAmount, numOfYears, qty, startDate, multiVendor, multiVenPayoutObj) {
 
@@ -195,7 +249,7 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
     	var lineObj = new PayableItemsObj();
 
     	var payoutPct = (multiVendor) ? parseFloat(multiVenPayoutObj.payout_percent)/100 : 1;
-    	
+
     	//log.debug("payoutPct = " + payoutPct);
 
     	if(lineUniqueId) {
@@ -208,10 +262,10 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
     	    // if lineUniqueId is falsy value, the amount remains the same throughout the years
     	    lineObj.amount = totalAmount
         }
-    	
+
     	// add 364 days to start date for amortization schedule.
     	var endDate = moment(startDate).add(365,'days')._d
-    	
+
     	lineObj.item = itemId
     	lineObj.rate = lineObj.amount / qty;
     	lineObj.startdate = startDate;
@@ -222,26 +276,26 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
             title: 'item lineObj value check',
             details: lineObj
         });
-    	
+
     	return lineObj
     }
-    
+
     function getMultiVendorItems() {
     	// TODO - complete this function - Created an array of multi vendor items and return it
-    	
+
     	return ['2421','2429'];
     }
-    
+
     function getMultiVendorPayoutObjs(itemId) {
-    	
+
     	log.audit("getMultiVendorPayoutObj " + itemId );
-    	
+
     	var customrecord_multi_ven_pay_tableSearchObj = search.create({
     		   type: "customrecord_multi_ven_pay_table",
     		   filters:
     		   [
-    		      ["isinactive","is","F"], 
-    		      "AND", 
+    		      ["isinactive","is","F"],
+    		      "AND",
     		      ["custrecord_item_parent.internalidnumber","equalto",itemId]
     		   ],
     		   columns:
@@ -260,17 +314,17 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
     		});
     		var searchResultCount = customrecord_multi_ven_pay_tableSearchObj.runPaged().count;
     		log.debug("customrecord_multi_ven_pay_tableSearchObj result count",searchResultCount);
-    		
+
     		var vendorPayoutObj = {};
     		var index = 1;
-    		
+
     		if(searchResultCount === 1) {
-    			
+
     			customrecord_multi_ven_pay_tableSearchObj.run().each(function(result) {
-    				
+
     				for(var i = 0; i < result.columns.length; i++) {
-    					
-    					
+
+
     					var col = result.columns[i];
 
     					if(result.getValue(col)) {
@@ -285,7 +339,7 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
                         }
 
     				}
-    			
+
     		});
     		log.debug({
     			title: "vendorPayoutObj value check",
@@ -299,14 +353,24 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
 				details: 'MORE THAN 1 OR NO RECORD FOUND FOR ITEM ID  : ' + itemId
 			});
     	}
-    		
+
     }
 
    function createNewVendorBill(payableObj) {
+	   
+	   if(payableObj.vendor == CYBERU_ID) {
+		   return 'cyberu';
+	   }
+	   
         var newVendorBillRec = record.create({
             type: record.Type.VENDOR_BILL,
             isDynamic: true
         });
+        
+        newVendorBillRec.setValue({
+        	fieldId: 'account',
+        	value: payableObj.apAccount
+        })
 
         newVendorBillRec.setValue({
             fieldId: 'entity',
@@ -324,7 +388,7 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
        });
 
        newVendorBillRec.setValue({
-           fieldId: 'location',
+           fieldId: 'subsidiary',
            value: payableObj.subsidiary
        });
 
@@ -381,7 +445,7 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
        });
 
        payableObj.items.forEach(function(itemObj) {
-    	   
+
 		   /*log.debug({
 			   title: 'itemObj',
 			   details: itemObj
@@ -389,52 +453,52 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
 		   	newVendorBillRec.selectNewLine({
 	            sublistId: 'item'
 	        });
-	
+
 		   	newVendorBillRec.setCurrentSublistValue({
 	            sublistId: 'item',
 	            fieldId: 'custcol_expense_date',
 	            value: moment(payableObj.trandate)._d
 	        });
-	
+
 		   	newVendorBillRec.setCurrentSublistValue({
 	            sublistId: 'item',
 	            fieldId: 'item',
 	            value: itemObj.item
 	        });
-	
+
 		   	newVendorBillRec.setCurrentSublistValue({
 	            sublistId: 'item',
 	            fieldId: 'rate',
 	            value: itemObj.rate
 	        });
-	
+
 		   	newVendorBillRec.setCurrentSublistValue({
 	            sublistId: 'item',
 	            fieldId: 'amount',
 	            value: itemObj.amount
 	        });
-	
+
 		   	newVendorBillRec.setCurrentSublistValue({
 	            sublistId: 'item',
 	            fieldId: 'location',
 	            value: payableObj.location
 	        });
-	
+
 		   	newVendorBillRec.setCurrentSublistValue({
 	            sublistId: 'item',
 	            fieldId: 'amortizstartdate',
 	            value: moment(itemObj.startdate)._d
 		   	});
-    	   
+
     	   // calculate end date for sub-period
-    	   
+
     	   var tempEndDate = moment(itemObj.enddate)._d > moment(payableObj.enddate)._d ?
     			   moment(payableObj.enddate)._d : moment(itemObj.enddate)._d;
-    			   
-    	
+
+
     	  //log.debug("amortization end date value check", 'start date : ' + moment(itemObj.startdate)._d + 'end date : ' + tempEndDate);
-    	   	
-    	   	
+
+
            newVendorBillRec.setCurrentSublistValue({
                sublistId: 'item',
                fieldId: 'amortizationenddate',
@@ -454,6 +518,14 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
                title: 'Error While Creating Payable Record',
                details: e
            });
+           
+           email.send({
+        	   author: '117473',
+        	   recipients: 'cyi@csod.com',
+        	   subject: 'PAYABLE SCRIPT FAILED TO CREATE PAYABLE',
+        	   body: e
+           });
+           
        }
 
 
@@ -482,6 +554,8 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
                 [
                     ["custrecord_pid_saleorder_link.status","noneof","SalesOrd:H","SalesOrd:C","SalesOrd:A"],
                     "AND",
+                    ["custrecord_pid_saleorder_link.mainline","is","T"],
+                    "AND",
                     ["custrecord_pid_all_bills_created","is","F"]
                 ],
             columns:
@@ -507,63 +581,68 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
             title: 'Context check',
             details: context
         });
-        
+
         var payableObjArr = [];
-        
+
     	const MULTI_VENDOR_ITEMS = getMultiVendorItems();
 
     	var contextValue = JSON.parse(context.value);
-    	
-    	if(MULTI_VENDOR_ITEMS.indexOf(contextValue.values.custrecord_pid_item.value) > -1) {
-    		// item is multi-vendor item 
-    		// create object based on "content anytime" requirements
-    		
-    		var multiVenPayoutObjs = getMultiVendorPayoutObjs(contextValue.values.custrecord_pid_item.value);
-    		
-    		for (index in multiVenPayoutObjs) {
-    			
-    			var multiVenPayoutObj = multiVenPayoutObjs[index];
-    			payableObjArr.push(createPayableObj(contextValue, true, multiVenPayoutObj));
-    			log.debug({
-    	        	title: "Final PayableObjArr value check",
-    	        	details: payableObjArr
-    	        });
-    		}
-    		
-    		
-    	} else {
-    	
-    		payableObjArr.push(createPayableObj(contextValue, false));
-    		
-    		log.debug({
-            	title: "Final PayableObjArr value check",
-            	details: payableObjArr
+
+    	// validation for stray Payable ID
+    	var validationCheck = validatePayableId(contextValue.id);
+
+    	if(validationCheck) {
+        	if(MULTI_VENDOR_ITEMS.indexOf(contextValue.values.custrecord_pid_item.value) > -1) {
+        		// item is multi-vendor item
+        		// create object based on "content anytime" requirements
+
+        		var multiVenPayoutObjs = getMultiVendorPayoutObjs(contextValue.values.custrecord_pid_item.value);
+
+        		for (index in multiVenPayoutObjs) {
+
+        			var multiVenPayoutObj = multiVenPayoutObjs[index];
+        			payableObjArr.push(createPayableObj(contextValue, true, multiVenPayoutObj));
+        			log.debug({
+        	        	title: "Final PayableObjArr value check",
+        	        	details: payableObjArr
+        	        });
+        		}
+
+
+        	} else {
+
+        		payableObjArr.push(createPayableObj(contextValue, false));
+
+        		log.debug({
+                	title: "Final PayableObjArr value check",
+                	details: payableObjArr
+                });
+        	}
+
+            context.write({
+            	key: contextValue.id,
+            	value: payableObjArr
             });
     	}
 
-        context.write({
-        	key: contextValue.id,
-        	value: payableObjArr
-        });
-
     };
-    
+
     var reduce = function(context) {
-    	
+
     	log.debug({
     		title: 'context value check',
     		details: context
     	});
-    	
+
     	var contextValue = JSON.parse(context.values[0]);
-    	
+
     	log.audit('contextValues length in reduce = ' + contextValue.length);
 
     	var recordNumbersToCreate = 0;
     	var recordCreatedArr = [];
-    	
+
     	for(var i = 0; i < contextValue.length; i++) {
-    		
+
 			var payableObjArr = contextValue[i];
             recordNumbersToCreate = payableObjArr.length * contextValue.length;
 
@@ -584,9 +663,9 @@ define(['N/search', 'N/record', 'N/runtime', '../Lib/moment', 'N/format'],
 
 
 			}
-    		
+
     	}
-    	
+
     	log.audit({
     		title: 'Record Length Check',
     		details: 'recordNumbersToCreate = ' + recordNumbersToCreate + ', recordCreatedArr = ' +  recordCreatedArr.length

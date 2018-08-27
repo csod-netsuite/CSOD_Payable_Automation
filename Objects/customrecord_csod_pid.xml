@@ -1,9 +1,9 @@
 <customrecordtype scriptid="customrecord_csod_pid">
   <accesstype>CUSTRECORDENTRYPERM</accesstype>
   <allowattachments>T</allowattachments>
-  <allowinlinedeleting>T</allowinlinedeleting>
-  <allowinlinedetaching>T</allowinlinedetaching>
-  <allowinlineediting>T</allowinlineediting>
+  <allowinlinedeleting>F</allowinlinedeleting>
+  <allowinlinedetaching>F</allowinlinedetaching>
+  <allowinlineediting>F</allowinlineediting>
   <allowmobileaccess>F</allowmobileaccess>
   <allownumberingoverride>F</allownumberingoverride>
   <allowquickadd>T</allowquickadd>

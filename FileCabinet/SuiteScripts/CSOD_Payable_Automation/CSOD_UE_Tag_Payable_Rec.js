@@ -88,10 +88,30 @@ function(record, runtime, moment) {
         var referralFee = +scriptContext.newRecord.getValue('custbody_reseller_referral_fee');
 
         if(referralFee != 0) { // custbody_csod_non_commissionable
-            scriptContext.newRecord.setValue({
-                fieldId: 'custbody_csod_non_commissionable',
-                value: referralFee * contractLengthYears
-            })
+        	
+        	var forceWriteValue = true;
+        	
+        	// old record had any value
+        	if(scriptContext.oldRecord) {
+        		if(+scriptContext.oldRecord.getValue('custbody_csod_non_commissionable')) {
+            		// if this is edit and the value has been changed then exit don't force write 
+            		
+            		var newNonComm = +scriptContext.newRecord.getValue('custbody_csod_non_commissionable');
+            		
+        			if(newNonComm) {
+        				forceWriteValue = false;
+        	        }	
+            	}
+        	}
+        	
+        	
+        	if(forceWriteValue) {
+        		scriptContext.newRecord.setValue({
+                    fieldId: 'custbody_csod_non_commissionable',
+                    value: referralFee * contractLengthYears
+                });
+        	} 	
+            
         }
 
         var contentSubtotal = 0;
@@ -175,6 +195,11 @@ function(record, runtime, moment) {
     function createPayableId(scriptContext) {
 
         if(scriptContext.type === scriptContext.UserEventType.DELETE) { // in delete event skip
+            return;
+        }
+
+        if(scriptContext.newRecord.getValue('custbody_payables_created')) { // exiting. Old Sales Order
+            log.audit('Exiting Script - Old Sales Order. ID = ' + scriptContext.newRecord.id);
             return;
         }
 

@@ -28,7 +28,7 @@ function(ui) {
     	
     	var form = scriptContext.form;
     	
-    	form.clientScriptModulePath = 'SuiteScripts/CSOD_Payable_Automation/CSOD_CL_Payable_Id';
+    	form.clientScriptFileId = 'SuiteScripts/CSOD_Payable_Automation/CSOD_CL_Payable_Id';
     	
     	log.debug("custparam check", requestMessage);
     	

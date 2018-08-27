@@ -71,6 +71,7 @@ function afterSubmit(type)
 	if(type == 'create' || type == 'edit')
 	{
 		var amt;
+		var updUSDTtotalFlag = false;
 		var results = nlapiSearchRecord(nlapiGetRecordType(), null, [new nlobjSearchFilter('mainline', null, 'is', 'T'), new nlobjSearchFilter('internalid', null, 'anyof', nlapiGetRecordId())], new nlobjSearchColumn('amount'));
 		if(results != null && results != '')
 		{
@@ -78,71 +79,9 @@ function afterSubmit(type)
 		}
 		
 		//var currRec = nlapiLoadRecord(nlapiGetRecordType(), nlapiGetRecordId());
-		var updUSDTtotalFlag = false;
-		if(type == 'create') {
-            //updUSDTtotalFlag = true;
-           
-            if(nlapiGetFieldValue('custbody_created_by_payables_scrpt') == 'T') {
-        		nlapiLogExecution('DEBUG', 'Entering FX Rate logic');
-             
-        		
-        		var vendBillRec = nlapiLoadRecord('vendorbill', nlapiGetRecordId());
-        		var vendorId = nlapiGetFieldValue('entity');
-        		
-        		var lineCount = nlapiGetLineItemCount('item');
-        		var exchangeRate = +nlapiGetFieldValue('exchangerate');
-        		var usePrimaryCurrency = nlapiLookupField('vendor', vendorId, 'custentity_csod_use_primary_curr_payable')
-        		var payableCurrency =  nlapiGetFieldValue('currency');
-        		var tranDate = nlapiGetFieldValue('trandate');
-        		
-        		var origSalesOrderId = nlapiGetFieldValue('custbody_sales_order');
-    			
-				var salesOrderCurrency = nlapiLookupField('salesorder', origSalesOrderId, 'currency');
-				
-				var newExchangeRate = 0;
-				
-				newExchangeRate = +nlapiExchangeRate(salesOrderCurrency, payableCurrency, tranDate);
-				
-				exchangeRate = newExchangeRate;
-				
-				vendBillRec.setFieldValue('exchangerate', newExchangeRate);
-				
-
-	    		var lineUpdated = 0;
-	    		
-	    		if(usePrimaryCurrency == 'T') {
 		
-	    			nlapiLogExecution('DEBUG', 'EXCHANGE RATE for use Primary Curr', exchangeRate);
-	    			
-	    			
-	    			for(var line = 1 ; line <= lineCount; line += 1 ) {
-	    				vendBillRec.selectLineItem('item', line);
-	        			var amount = +vendBillRec.getCurrentLineItemValue('item', 'amount');
-	        			var quantity = +vendBillRec.getCurrentLineItemValue('item', 'quantity');
-	        			
-	        			if(exchangeRate && amount > 0) {
-	        				amount = (amount * exchangeRate).toFixed(2); 
-	        				var rate = (amount / quantity);
-	        				nlapiLogExecution('DEBUG', 'Amount in Line ' + line, amount);
-	        				vendBillRec.setCurrentLineItemValue('item', 'amount', amount);
-	        				vendBillRec.setCurrentLineItemValue('item', 'rate', rate);
-	        				vendBillRec.commitLineItem('item', true);
-	        				lineUpdated++;
-	        			}
-	
-	        		}
-	    		} 
-		    		
-	    		if(lineUpdated > 0) {
-	    			nlapiSubmitRecord(vendBillRec, false, true);
-	    		}
 		
-    		}
-            
-        }
-        
-
-		else if(type == 'edit' && nlapiGetOldRecord().getFieldValue('usertotal') != nlapiGetNewRecord().getFieldValue('usertotal'))
+		if(type == 'edit' && nlapiGetOldRecord().getFieldValue('usertotal') != nlapiGetNewRecord().getFieldValue('usertotal'))
 			updUSDTtotalFlag = true;
 		
 		// Search for amount column (which is always USD) for this record.
@@ -292,6 +231,69 @@ function beforeSubmit(type)
 			}
 			
 		}
+		
+		// Exchange Rate Handler 
+		
+		if(type == 'create') {
+            //updUSDTtotalFlag = true;
+           
+            if(nlapiGetFieldValue('custbody_created_by_payables_scrpt') == 'T') {
+        		nlapiLogExecution('DEBUG', 'Entering FX Rate logic');
+             
+        		
+        		//var vendBillRec = nlapiLoadRecord('vendorbill', nlapiGetRecordId());
+        		var vendorId = nlapiGetFieldValue('entity');
+        		
+        		var lineCount = nlapiGetLineItemCount('item');
+        		var exchangeRate = +nlapiGetFieldValue('exchangerate');
+        		var usePrimaryCurrency = nlapiLookupField('vendor', vendorId, 'custentity_csod_use_primary_curr_payable')
+        		var payableCurrency =  nlapiGetFieldValue('currency');
+        		var tranDate = nlapiGetFieldValue('trandate');
+        		
+        		var origSalesOrderId = nlapiGetFieldValue('custbody_sales_order');
+    			
+				var salesOrderCurrency = nlapiLookupField('salesorder', origSalesOrderId, 'currency');
+				
+				var newExchangeRate = 0;
+				
+				newExchangeRate = +nlapiExchangeRate(salesOrderCurrency, payableCurrency, tranDate);
+				
+				
+				exchangeRate = newExchangeRate;
+				
+				// TODO don't use newExchangeRate - delete the line 
+				// nlapiSetFieldValue('exchangerate', newExchangeRate);
+				
+
+	    		var lineUpdated = 0;
+	    		
+	    		if(usePrimaryCurrency == 'T') {
+		
+	    			nlapiLogExecution('DEBUG', 'EXCHANGE RATE for use Primary Curr', exchangeRate);
+	    			
+	    			
+	    			for(var line = 1 ; line <= lineCount; line += 1 ) {
+	    				nlapiSelectLineItem('item', line);
+	        			var amount = +nlapiGetCurrentLineItemValue('item', 'amount');
+	        			var quantity = +nlapiGetCurrentLineItemValue('item', 'quantity');
+	        			
+	        			if(exchangeRate && amount > 0) {
+	        				amount = (amount * exchangeRate).toFixed(2); 
+	        				var rate = (amount / quantity);
+	        				nlapiLogExecution('DEBUG', 'Amount in Line ' + line, amount);
+	        				nlapiSetCurrentLineItemValue('item', 'amount', amount);
+	        				nlapiSetCurrentLineItemValue('item', 'rate', rate);
+	        				nlapiCommitLineItem('item');
+	        				
+	        			}
+	
+	        		}
+	    		} 
+		
+    		}
+            
+        }
+		
 		
 		// DSG Case 47943 start
 		var vendor = nlapiGetFieldValue('entity');

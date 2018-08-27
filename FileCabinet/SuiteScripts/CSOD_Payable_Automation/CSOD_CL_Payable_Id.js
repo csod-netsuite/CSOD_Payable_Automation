@@ -1,11 +1,9 @@
 /**
- * @NApiVersion 2.x
- * @NScriptType ClientScript
  * @NModuleScope Public
  */
-define(['N/https', 'N/ui/message','../Lib/sweetalert.min'],
+define(['../Lib/sweetalert.min.js','N/https', 'N/ui/message'],
 
-function(https, message, swal) {
+function(swal, https, message) {
 	
 	function showMessage() {
 		var myMsg = message.create({
@@ -36,16 +34,16 @@ function(https, message, swal) {
         			button: false
         		});
     			
-    			
+    			//TODO Change ID in Production
     			var response = https.request({
     				method: https.Method.GET,
-    				url: 'https://forms.netsuite.com/app/site/hosting/scriptlet.nl?script=1101&deploy=1&compid=642845_SB2&h=fb58ae3b10acb00e9ec2&payableId=' + payableId
+    				url: 'https://forms.na2.netsuite.com/app/site/hosting/scriptlet.nl?script=1787&deploy=1&compid=642845&h=827313aca591c5e03e37&payableId=' + payableId
     			});
 
     			
     			if(response.body == 'success\n') {
-    				
-    				window.open('https://system.netsuite.com/app/common/custom/custrecordentry.nl?rectype=491&id=' + payableId + '&custparam=success', '_self');
+					//TODO The urls are hard coded. Handle these
+    				window.open('https://system.na2.netsuite.com/app/common/custom/custrecordentry.nl?rectype=499&id=' + payableId + '&custparam=success', '_self');
     				
     			} else {
     				swal("There was an error.", "Please contact administrator","error");

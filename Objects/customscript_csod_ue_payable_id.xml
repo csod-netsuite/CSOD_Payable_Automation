@@ -1,0 +1,28 @@
+<usereventscript scriptid="customscript_csod_ue_payable_id">
+  <aftersubmitfunction></aftersubmitfunction>
+  <beforeloadfunction>beforeLoad</beforeloadfunction>
+  <beforesubmitfunction></beforesubmitfunction>
+  <description></description>
+  <isinactive>F</isinactive>
+  <name>CSOD UE Payable ID</name>
+  <notifyadmins>F</notifyadmins>
+  <notifyemails></notifyemails>
+  <notifyowner>T</notifyowner>
+  <notifyuser>F</notifyuser>
+  <scriptfile>[/SuiteScripts/CSOD_Payable_Automation/CSOD_UE_Payable_Id.js]</scriptfile>
+  <scriptdeployments>
+    <scriptdeployment scriptid="customdeploy_csod_ue_payable_id">
+      <allemployees>F</allemployees>
+      <allpartners>F</allpartners>
+      <allroles>T</allroles>
+      <audslctrole></audslctrole>
+      <eventtype></eventtype>
+      <executeinwebstore>F</executeinwebstore>
+      <isdeployed>T</isdeployed>
+      <loglevel>DEBUG</loglevel>
+      <recordtype>[scriptid=customrecord_csod_pid]</recordtype>
+      <runasrole>ADMINISTRATOR</runasrole>
+      <status>RELEASED</status>
+    </scriptdeployment>
+  </scriptdeployments>
+</usereventscript>

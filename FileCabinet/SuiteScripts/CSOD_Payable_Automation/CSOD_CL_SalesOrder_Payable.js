@@ -3,8 +3,6 @@ define(['N/record', 'N/search'], function (record, search) {
     /**
      * Module Description...
      *
-     * @exports XXX
-     *
      *
      * @NApiVersion 2.x
      * @NModuleScope SameAccount
@@ -109,6 +107,11 @@ define(['N/record', 'N/search'], function (record, search) {
         }
     };
 
+
+    /**             **
+     *     UTILS     *
+     **             **/
+
     var loadLookupFields = function(payableId) {
         var lookupObj = search.lookupFields({
             type: 'customrecord_csod_pid',
@@ -134,5 +137,6 @@ define(['N/record', 'N/search'], function (record, search) {
     }
 
     exports.fieldChanged = updatePayableId;
+
     return exports;
 });
